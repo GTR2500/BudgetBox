@@ -7,6 +7,7 @@ import Struttura from "./pages/Struttura.jsx"
 import Riepilogo from "./pages/Riepilogo.jsx"
 import DatiNeveVento from "./pages/DatiNeveVento.jsx"
 import LocalitaSismica from "./pages/LocalitaSismica.jsx"
+import Impostazioni from "./pages/Impostazioni.jsx"   // 👈 NEW
 
 export default function App() {
   const [theme, setTheme] = useState(getInitialTheme())
@@ -19,10 +20,7 @@ export default function App() {
     localStorage.setItem("theme", theme)
   }, [theme])
 
-  // chiudi eventuali menù su cambio pagina, se servisse
-  useEffect(() => {
-    // noop per ora
-  }, [location.pathname])
+  useEffect(() => {}, [location.pathname])
 
   const REV = "v0.3"
   const DATA_REV = "26/08/2025"
@@ -70,6 +68,7 @@ export default function App() {
             <Item to="/">Anagrafica</Item>
             <Item to="/struttura">Struttura</Item>
             <Item to="/riepilogo">Riepilogo / Stampa</Item>
+            <Item to="/impostazioni">Impostazioni</Item>            {/* 👈 NEW */}
             <Item to="/dati/localita">Dati Località (sismica)</Item>
             <Item to="/dati/neve-vento">Dati Neve &amp; Vento</Item>
           </ul>
@@ -82,9 +81,9 @@ export default function App() {
           <Route path="/" element={<Anagrafica />} />
           <Route path="/struttura" element={<Struttura />} />
           <Route path="/riepilogo" element={<Riepilogo />} />
+          <Route path="/impostazioni" element={<Impostazioni />} />  {/* 👈 NEW */}
           <Route path="/dati/localita" element={<LocalitaSismica />} />
           <Route path="/dati/neve-vento" element={<DatiNeveVento />} />
-          {/* fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
