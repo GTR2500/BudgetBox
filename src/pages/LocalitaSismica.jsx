@@ -12,7 +12,9 @@ import React, { useEffect, useMemo, useState } from "react"
  *   public/documenti/classificazione-sismica-aggiornata-maggio-2025.txt
  */
 
-const FILE_PATH = "/documenti/classificazione-sismica-aggiornata-maggio-2025.txt"
+- const FILE_PATH = "/documenti/classificazione-sismica-aggiornata-maggio-2025.txt"
++ const FILE_REL_PATH = "documenti/classificazione-sismica-aggiornata-maggio-2025.txt"
++ const FILE_PATH = `${import.meta.env.BASE_URL || "/"}${FILE_REL_PATH}`.replace(/\/\/+/g, "/")
 const LS_KEY = "localita_sismica_v1"
 
 export default function LocalitaSismica() {
