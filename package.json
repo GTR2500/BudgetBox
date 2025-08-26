@@ -1,3 +1,4 @@
+"@vitejs/plugin-react": "^4.3.1"
 {
   "name": "preventivi-grimaldelli",
   "private": true,
