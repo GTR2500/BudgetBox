@@ -2,10 +2,12 @@ name: Deploy Pages
 on:
   push:
     branches: [ main ]
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -18,11 +20,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'        # cache più veloce
-      - run: npm install      # 👈 al posto di "npm ci"
+      - run: npm install
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
-        with: { path: dist }
+        with:
+          path: dist
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
