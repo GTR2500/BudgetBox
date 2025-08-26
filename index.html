@@ -1,12 +1,100 @@
-<!doctype html>
-<html lang="it">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Preventivi Grimaldelli</title>
-  </head>
-  <body class="bg-gray-50">
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>
+/* src/index.css */
+
+/* Base molto leggera: non interferisce con Tailwind se presente */
+html, body {
+  height: 100%;
+}
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+* {
+  box-sizing: border-box;
+}
+
+/* Supporto tema scuro (compatibilità generale) */
+.dark {
+  color-scheme: dark;
+}
+
+/* Utility compatibili con le classi usate in JSX (se non hai Tailwind) */
+.print\:hidden { }
+.print\:break-inside-avoid { }
+@media print {
+  .print\:hidden { display: none !important; }
+  .print\:break-inside-avoid { break-inside: avoid !important; page-break-inside: avoid !important; }
+}
+
+/* Migliorie tabelle */
+table {
+  border-collapse: collapse;
+}
+th, td {
+  padding: 0.5rem;
+  vertical-align: top;
+}
+
+/* ============ STAMPA / PDF ============ */
+
+@page {
+  /* A4 verticale e margini comodi per intestazione e piede */
+  size: A4;
+  margin: 14mm 12mm;
+}
+
+@media print {
+  /* sfondo bianco e colori fedeli */
+  html, body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Rimuovi elementi non necessari nel PDF */
+  header, nav, .no-print, .print\:hidden {
+    display: none !important;
+  }
+
+  /* Layout contenuti */
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  /* Evita spezzature brutte su card/section */
+  section, .card, .rounded-2xl, .rounded-xl {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Tabelle: ripeti thead, evita righe spezzate */
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  tr, img { page-break-inside: avoid; }
+
+  /* Ombre in stampa: rimuovile per nitidezza */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
+
+/* Piccola rifinitura per pulsanti/base (se Tailwind non è attivo) */
+button, input, select, textarea {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+input, select, textarea {
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 10px;
+  padding: 0.5rem 0.6rem;
+  background: #fff;
+}
+
+/* Bordo arancione coerente con UI */
+.border {
+  border: 1px solid rgba(253, 186, 116, 0.8);
+}
