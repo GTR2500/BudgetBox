@@ -1,0 +1,44 @@
+[
+  {
+    "id": "GATE-STD",
+    "nome": "Cancello zincato standard",
+    "unita": "pz",
+    "prezzo": 320
+  },
+  {
+    "id": "GATE-SC",
+    "nome": "Scorrevole zincato (4 m)",
+    "unita": "pz",
+    "prezzo": 740
+  },
+  {
+    "id": "MANG-BATT",
+    "nome": "Battifianchi/mangiatoia (ml)",
+    "unita": "ml",
+    "prezzo": 55
+  },
+  {
+    "id": "AUTOCAT",
+    "nome": "Autocattura (ml)",
+    "unita": "ml",
+    "prezzo": 120
+  },
+  {
+    "id": "ABBEV",
+    "nome": "Abbeveratoio inox antigelo",
+    "unita": "pz",
+    "prezzo": 260
+  },
+  {
+    "id": "RUSPETTA",
+    "nome": "Ruspette/raschiatore",
+    "unita": "pz",
+    "prezzo": 1800
+  },
+  {
+    "id": "LATTONERIA",
+    "nome": "Lattoneria (m²)",
+    "unita": "m²",
+    "prezzo": 18
+  }
+]

@@ -1,0 +1,71 @@
+{
+  "Bovine adulte": {
+    "stabulazioni": {
+      "lettiera": {
+        "min": 6.0,
+        "adeg": 6.5,
+        "opt": 7.1
+      },
+      "cuccette": {
+        "min": 6.0,
+        "adeg": 6.5,
+        "opt": 7.1
+      },
+      "fissa": {
+        "min": 6.0,
+        "adeg": 6.5,
+        "opt": 7.1
+      }
+    }
+  },
+  "Manze bovine": {
+    "stabulazioni": {
+      "lettiera": {
+        "min": 3.5,
+        "adeg": 3.8,
+        "opt": 4.1
+      },
+      "cuccette": {
+        "min": 3.5,
+        "adeg": 3.8,
+        "opt": 4.1
+      }
+    }
+  },
+  "Tori da rimonta": {
+    "stabulazioni": {
+      "libera": {
+        "min": 9.0,
+        "adeg": 9.5,
+        "opt": 10.1
+      }
+    }
+  },
+  "Bufale adulte": {
+    "stabulazioni": {
+      "lettiera": {
+        "min": 5.0,
+        "adeg": 6.0,
+        "opt": 7.1
+      }
+    }
+  },
+  "Bufale al parto": {
+    "stabulazioni": {
+      "lettiera": {
+        "min": 7.0,
+        "adeg": 7.5,
+        "opt": 8.1
+      }
+    }
+  },
+  "Manze bufaline": {
+    "stabulazioni": {
+      "lettiera": {
+        "min": 2.5,
+        "adeg": 3.5,
+        "opt": 4.1
+      }
+    }
+  }
+}

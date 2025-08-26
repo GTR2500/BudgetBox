@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@media print {
+  .no-print { display: none !important; }
+  .print-block { display: block !important; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+.table th, .table td { border: 1px solid #e5e7eb; padding: 6px; font-size: 12px; }
+.table th { background: #fafafa; }
