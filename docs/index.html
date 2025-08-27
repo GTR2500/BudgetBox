@@ -2,163 +2,146 @@
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  <title>Preventivi Grimaldelli — Pagina 1</title>
+  <title>Pagina 1 — Anagrafica</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="./assets/css/app.css" rel="stylesheet">
 </head>
 <body>
   <header>
-    <div class="container toolbar">
-      <h1 style="flex:1">Preventivi Grimaldelli</h1>
-      <nav class="nav">
-        <a class="disabled" href="./index.html">1. Anagrafica</a>
-        <a class="disabled" href="./impianti.html">2. Impianti</a>
-        <a class="disabled" href="./accessori.html">3. Accessori</a>
-        <a class="disabled" href="./riepilogo.html">4. Riepilogo</a>
-      </nav>
+    <div class="container toolbar" style="justify-content:space-between">
+      <div class="logo">
+        <img src="https://www.glcgrimaldelli.com/wp-content/uploads/2019/06/Logo-Sottopagine.jpg" alt="Grimaldelli">
+        <h1 id="title">Preventivi</h1>
+      </div>
+      <div class="header-right">
+        <div class="rev">Rev <span id="revDate"></span> • <span id="revVer"></span></div>
+        <button id="printBtn" class="btn">Stampa / PDF</button>
+        <a class="btn btn-ghost" href="./impostazioni.html" title="Impostazioni">Impostazioni</a>
+        <button id="themeBtn" class="btn" title="Tema">🌙</button>
+      </div>
     </div>
   </header>
 
   <main class="container" style="padding-bottom:60px">
     <!-- ANAGRAFICA -->
     <section class="card">
-      <h2>Anagrafica</h2>
-      <div class="row">
-        <label>Cliente
-          <input id="cli" placeholder="Ragione sociale">
-        </label>
+      <h2 style="color:var(--brand)">Anagrafica</h2>
+      <div class="row4">
+        <label>Cliente <input id="cli" placeholder="Ragione sociale"></label>
         <label>Località
-          <input id="loc" placeholder="Comune (prov.)">
+          <select id="loc"></select>
+          <div class="small">Dati meteo: <span id="locBadge" class="badge">—</span></div>
         </label>
-        <label>Riferimento
-          <input id="rif" placeholder="Es. Rif. interno">
-        </label>
-        <label>Data
-          <input id="dat" type="date">
-        </label>
+        <label>Riferimento <input id="rif" placeholder="Es. Rif. interno"></label>
+        <label>Data <input id="dat" type="date"></label>
       </div>
     </section>
 
     <!-- CAPANNONE -->
     <section class="card" style="margin-top:12px">
       <div class="toolbar" style="justify-content:space-between">
-        <h2>Capannone</h2>
-        <div class="small">Stato superficie:
+        <h2 style="color:var(--brand)">Capannone</h2>
+        <div class="toolbar" style="gap:10px">
+          <span class="small">Stato superficie:</span>
           <span id="badge" class="badge">—</span>
+          <span class="small">(<span id="badgePct">0%</span>)</span>
+          <button id="checkBtn" class="btn">Check superficie</button>
         </div>
       </div>
 
-      <div class="row" style="margin-top:8px">
+      <div class="row4" style="margin-top:8px">
         <label>Lunghezza (m) <input id="len" type="number" step="1" min="0"></label>
         <label>Larghezza (m) <input id="wid" type="number" step="1" min="0"></label>
         <label>Quota area di decubito (%) <input id="quo" type="number" step="1" min="0" max="100"></label>
         <label>Prezzo struttura (€/m²) <input id="prz" type="number" step="1" min="0"></label>
       </div>
 
-      <div class="row" style="margin-top:12px">
-        <div class="card">
-          <div class="small">Area lorda</div>
-          <div class="value"><span id="areaLorda">0.0</span> m²</div>
-        </div>
-        <div class="card">
-          <div class="small">Area decubito (reale)</div>
-          <div class="value"><span id="areaDecubito">0.0</span> m²</div>
-        </div>
-        <div class="card">
-          <div class="small">Area normativa richiesta</div>
-          <div class="value"><span id="areaNormativa">0.0</span> m²</div>
-        </div>
+      <div class="row4" style="margin-top:12px">
+        <div class="card"><div class="small">Area lorda</div><div class="value"><span id="areaLorda">0.0</span> m²</div></div>
+        <div class="card"><div class="small">Area decubito (reale)</div><div class="value"><span id="areaDecubito">0.0</span> m²</div></div>
+        <div class="card"><div class="small">Area normativa richiesta</div><div class="value"><span id="areaNormativa">0.0</span> m²</div></div>
+        <div class="card"><div class="small">Costo struttura</div><div class="value"><span id="costoStruttura">—</span></div></div>
       </div>
 
       <label style="margin-top:12px">Note
-        <input id="not" placeholder="Note tecniche...">
+        <input id="not" placeholder="Struttura metallica zincata, copertura sandwich 40 mm">
       </label>
     </section>
 
-    <!-- POPOLAZIONI & STABULAZIONI -->
+    <!-- POPOLAZIONI & STABULAZIONI (layout storico) -->
     <section class="card" style="margin-top:12px">
-      <h2>Popolazioni & stabulazioni</h2>
+      <h2 style="color:var(--brand)">Popolazioni &amp; stabulazioni</h2>
 
-      <div class="row" style="margin-top:8px">
-        <div class="card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3>Bovine adulte</h3><div class="small"><span id="cnt-bovineAdulte"></span> capi</div>
-          </div>
-          <div class="row">
+      <div class="row2" style="margin-top:8px">
+        <div class="specie card">
+          <div class="toolbar" style="justify-content:space-between"><h3>Bovine adulte</h3></div>
+          <div class="row2">
             <label>N. capi <input id="n-bovineAdulte" type="number" min="0"></label>
             <label>Stabulazione <select id="s-bovineAdulte"></select></label>
+            <label>Livello <select id="l-bovineAdulte"></select></label>
           </div>
-          <div class="small" style="margin-top:4px">Valore unitario: 6.50 m²/capo</div>
+          <div class="small">Valore unitario: <span id="vu-bovineAdulte">0.00</span> m²/capo</div>
         </div>
 
-        <div class="card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3>Manze bovine</h3><div class="small"><span id="cnt-manzeBovine"></span> capi</div>
-          </div>
-          <div class="row">
-            <label>N. capi <input id="n-manzeBovine" type="number" min="0"></label>
-            <label>Stabulazione <select id="s-manzeBovine"></select></label>
-          </div>
-          <div class="small" style="margin-top:4px">Valore unitario: 3.80 m²/capo</div>
-        </div>
-
-        <div class="card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3>Tori da rimonta</h3><div class="small"><span id="cnt-toriRimonta"></span> capi</div>
-          </div>
-          <div class="row">
+        <div class="specie card">
+          <div class="toolbar" style="justify-content:space-between"><h3>Tori da rimonta</h3></div>
+          <div class="row2">
             <label>N. capi <input id="n-toriRimonta" type="number" min="0"></label>
             <label>Stabulazione <select id="s-toriRimonta"></select></label>
+            <label>Livello <select id="l-toriRimonta"></select></label>
           </div>
-          <div class="small" style="margin-top:4px">Valore unitario: 9.50 m²/capo</div>
+          <div class="small">Valore unitario: <span id="vu-toriRimonta">0.00</span> m²/capo</div>
         </div>
 
-        <div class="card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3>Bufale adulte</h3><div class="small"><span id="cnt-bufaleAdulte"></span> capi</div>
-          </div>
-          <div class="row">
-            <label>N. capi <input id="n-bufaleAdulte" type="number" min="0"></label>
-            <label>Stabulazione <select id="s-bufaleAdulte"></select></label>
-          </div>
-          <div class="small" style="margin-top:4px">Valore unitario: 6.00 m²/capo</div>
-        </div>
-
-        <div class="card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3>Bufale al parto</h3><div class="small"><span id="cnt-bufaleParto"></span> capi</div>
-          </div>
-          <div class="row">
+        <div class="specie card">
+          <div class="toolbar" style="justify-content:space-between"><h3>Bufale al parto</h3></div>
+          <div class="row2">
             <label>N. capi <input id="n-bufaleParto" type="number" min="0"></label>
             <label>Stabulazione <select id="s-bufaleParto"></select></label>
+            <label>Livello <select id="l-bufaleParto"></select></label>
           </div>
-          <div class="small" style="margin-top:4px">Valore unitario: 7.50 m²/capo</div>
+          <div class="small">Valore unitario: <span id="vu-bufaleParto">0.00</span> m²/capo</div>
         </div>
 
-        <div class="card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3>Manze bufaline</h3><div class="small"><span id="cnt-manzeBufaline"></span> capi</div>
+        <div class="specie card">
+          <div class="toolbar" style="justify-content:space-between"><h3>Manze bovine</h3></div>
+          <div class="row2">
+            <label>N. capi <input id="n-manzeBovine" type="number" min="0"></label>
+            <label>Stabulazione <select id="s-manzeBovine"></select></label>
+            <label>Livello <select id="l-manzeBovine"></select></label>
           </div>
-          <div class="row">
+          <div class="small">Valore unitario: <span id="vu-manzeBovine">0.00</span> m²/capo</div>
+        </div>
+
+        <div class="specie card">
+          <div class="toolbar" style="justify-content:space-between"><h3>Bufale adulte</h3></div>
+          <div class="row2">
+            <label>N. capi <input id="n-bufaleAdulte" type="number" min="0"></label>
+            <label>Stabulazione <select id="s-bufaleAdulte"></select></label>
+            <label>Livello <select id="l-bufaleAdulte"></select></label>
+          </div>
+          <div class="small">Valore unitario: <span id="vu-bufaleAdulte">0.00</span> m²/capo</div>
+        </div>
+
+        <div class="specie card">
+          <div class="toolbar" style="justify-content:space-between"><h3>Manze bufaline</h3></div>
+          <div class="row2">
             <label>N. capi <input id="n-manzeBufaline" type="number" min="0"></label>
             <label>Stabulazione <select id="s-manzeBufaline"></select></label>
+            <label>Livello <select id="l-manzeBufaline"></select></label>
           </div>
-          <div class="small" style="margin-top:4px">Valore unitario: 3.50 m²/capo</div>
+          <div class="small">Valore unitario: <span id="vu-manzeBufaline">0.00</span> m²/capo</div>
         </div>
       </div>
 
       <div class="card" style="margin-top:12px">
         <h3>Bovini da ingrasso</h3>
-        <div class="row">
+        <div class="row4">
           <label>N. gruppi <input id="ing-gr" type="number" min="0"></label>
           <label>Capi per gruppo <input id="ing-cpg" type="number" min="0"></label>
           <label>Peso medio (kg) <input id="ing-peso" type="number" min="0"></label>
           <label>Livello
-            <select id="ing-liv">
-              <option>Adeguato</option>
-              <option>Modesto</option>
-              <option>Ottimo</option>
-            </select>
+            <select id="ing-liv"><option>Adeguato</option><option>Modesto</option><option>Ottimo</option></select>
           </label>
         </div>
         <div class="small" style="margin-top:6px">Valori unitari stimati: min 3.25 – adeg 4.25 – opt 5.25 m²/capo</div>
@@ -166,11 +149,16 @@
     </section>
 
     <div class="toolbar" style="margin-top:12px;justify-content:flex-end">
-      <button id="btn-next" class="btn-primary" disabled>Prosegui alla pagina 2</button>
+      <button id="btn-next" class="btn" disabled>Prosegui alla pagina 2</button>
     </div>
   </main>
 
+  <footer>© <span id="titleFooter"></span> per Grimaldelli s.r.l. — Manuel Zago</footer>
+
   <script src="./assets/js/core.js"></script>
-  <script>window.PreventivoApp.initPagina1();</script>
+  <script>
+    document.documentElement.setAttribute("data-theme","light");
+    window.PreventivoApp.initPagina1();
+  </script>
 </body>
 </html>
