@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Impostazioni</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="./assets/css/app.css" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="container toolbar" style="justify-content:space-between">
+      <div class="logo">
+        <img src="https://www.glcgrimaldelli.com/wp-content/uploads/2019/06/Logo-Sottopagine.jpg" alt="Grimaldelli">
+        <h1 id="title">Impostazioni</h1>
+      </div>
+      <div class="header-right">
+        <a class="btn" id="backBtn">← Torna alla pagina 1</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-bottom:60px">
+    <section class="card">
+      <h2 style="color:var(--brand)">Coefficienti normativi (m²/capo)</h2>
+      <div class="row4" id="unitari"></div>
+    </section>
+
+    <section class="card" style="margin-top:12px">
+      <h2 style="color:var(--brand)">Ingrasso — soglie</h2>
+      <div class="row4" id="ingrasso"></div>
+      <div class="small" style="margin-top:6px">Ordine: fino a peso ≤ maxPesoKg adotta mq indicati.</div>
+    </section>
+
+    <div class="toolbar" style="justify-content:flex-end;margin-top:12px">
+      <button class="btn" id="applyBtn">Applica e torna alla pagina 1</button>
+      <button class="btn btn-ghost" id="downloadBtn">Scarica norme.json modificato</button>
+    </div>
+  </main>
+
+  <script src="./assets/js/impostazioni.js"></script>
+</body>
+</html>
