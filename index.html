@@ -25,7 +25,11 @@
   <main class="container" style="padding-bottom:60px">
     <!-- ANAGRAFICA -->
     <section class="card">
-      <h2 style="color:var(--brand)">Anagrafica</h2>
+      <div class="toolbar" style="justify-content:space-between">
+        <h2 style="color:var(--brand)">Anagrafica</h2>
+        <!-- Badge meteo in alto a destra della sezione -->
+        <span id="badge-meteo" class="badge">—</span>
+      </div>
 
       <div class="grid-4">
         <label class="fld">
@@ -33,10 +37,8 @@
           <input id="cli" placeholder="Ragione sociale">
         </label>
 
-        <!-- Località con badge meteo assoluto, NON altera l’altezza della riga -->
-        <label class="fld fld-localita">
+        <label class="fld">
           <span>Località</span>
-          <span id="badge-meteo" class="badge badge-meteo">—</span>
           <select id="fld-localita"></select>
         </label>
 
