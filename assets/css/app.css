@@ -5,15 +5,15 @@
 
 /* ====== TOKEN: LIGHT (default) ====== */
 :root{
-  --brand:#ff7f2a;             /* arancione titoli/bordi */
-  --bg:#f6f8fb;                /* sfondo pagina */
-  --panel:#ffffff;             /* card/header */
-  --chip:#f1f5f9;              /* input base */
-  --text:#0f172a;              /* testo principale */
-  --muted:#475569;             /* testo secondario */
-  --line:#d8e0ea;              /* linee sottili */
-  --input-border:#cbd5e1;      /* bordo input */
-  --border:#ff7f2a55;          /* bordo arancione soft */
+  --brand:#ff7f2a;
+  --bg:#f6f8fb;
+  --panel:#ffffff;
+  --chip:#f1f5f9;
+  --text:#0f172a;
+  --muted:#475569;
+  --line:#d8e0ea;
+  --input-border:#cbd5e1;
+  --border:#ff7f2a55;
   --shadow:0 1px 2px rgba(0,0,0,.06);
 }
 
@@ -52,7 +52,7 @@ h1{font-size:22px;text-align:center;color:var(--brand)}
 
 .card{
   background:var(--panel);
-  border:1px solid var(--border);      /* bordo arancione soft */
+  border:1px solid var(--border);
   border-radius:14px;
   padding:14px;
   box-shadow:var(--shadow);
@@ -68,7 +68,7 @@ input,select{
   border-radius:10px;
   padding:10px 12px;
   font-size:14px;
-  height:44px;               /* altezza uniforme */
+  height:44px;
   line-height:22px;
 }
 input::placeholder{color:var(--muted);opacity:.75}
@@ -123,16 +123,6 @@ footer{
 /* ====== SPECIE (layout “storico”) ====== */
 .specie{display:grid;gap:8px}
 .specie .grid-2 > label:nth-child(3){grid-column:1/-1}
-
-/* ====== POSIZIONAMENTO BADGE METEO SOPRA LOCALITÀ ====== */
-.fld-localita{position:relative}
-.fld-localita .badge-meteo{
-  position:absolute;
-  top:-28px;                 /* sopra il campo senza spingere la riga */
-  left:50%;
-  transform:translateX(-50%);
-  z-index:1;
-}
 
 /* ====== UTILITA’ VISIVE ====== */
 hr{border:none;border-top:1px solid var(--line);margin:12px 0}
