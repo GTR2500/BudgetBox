@@ -1,9 +1,13 @@
 /* docs/assets/js/core.js */
 (function (global) {
-  // Versione visibile nel badge
+  // ===============================
+  // Config visibile (badge revisione)
+  // ===============================
   var APP_VERSION = "v0.1.1";
 
-  // Stato (solo in memoria; passa tra pagine via URL)
+  // ===============================
+  // Stato (solo in memoria; passa via URL)
+  // ===============================
   var state = {
     anagrafica: { cliente:"", localitaId:"", localita:"", riferimento:"", data: new Date().toISOString().slice(0,10) },
     capannone: { lunghezza:60, larghezza:25, prezzoMq:180, quotaDecubito:70, note:"Struttura metallica zincata, copertura sandwich 40 mm" },
@@ -18,18 +22,42 @@
     }
   };
 
-  var norme = null;        // da docs/assets/data/norme.json (+ override via cfg)
-  var localitaDB = [];     // da public/documenti/C-S-A-maggio-2025.txt
+  var norme = null;     // da docs/assets/data/norme.json (con eventuale override via ?cfg=)
+  var localitaDB = [];  // da public/documenti/C-S-A-maggio-2025.txt
 
-  // ---------- Utils ----------
+  // ===============================
+  // Utils
+  // ===============================
   function num(v){ return Number(v||0); }
   function fmt1(v){ return (Math.round(v*10)/10).toFixed(1); }
-  function deepMerge(t,s){ if(!s||typeof s!=="object") return t; Object.keys(s).forEach(function(k){ if(s[k]&&typeof s[k]==="object"&&!Array.isArray(s[k])) t[k]=deepMerge(t[k]||{},s[k]); else t[k]=s[k];}); return t; }
-  function getParam(name){ var m=new RegExp("[?&]"+name+"=([^&]*)").exec(location.search); return m?decodeURIComponent(m[1]):null; }
-  function encodeState(o){ var json=JSON.stringify(o),b=new TextEncoder().encode(json),s=""; for(var i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s); }
-  function decodeState(str){ try{ var bin=atob(str),u=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return JSON.parse(new TextDecoder().decode(u)); }catch(e){ return null; } }
+  function deepMerge(t,s){
+    if(!s || typeof s!=="object") return t;
+    Object.keys(s).forEach(function(k){
+      if(s[k] && typeof s[k]==="object" && !Array.isArray(s[k])) t[k]=deepMerge(t[k]||{},s[k]);
+      else t[k]=s[k];
+    });
+    return t;
+  }
+  function getParam(name){
+    var m=new RegExp("[?&]"+name+"=([^&]*)").exec(location.search);
+    return m?decodeURIComponent(m[1]):null;
+  }
+  function encodeState(o){
+    var json=JSON.stringify(o), b=new TextEncoder().encode(json), s="";
+    for(var i=0;i<b.length;i++) s+=String.fromCharCode(b[i]);
+    return btoa(s);
+  }
+  function decodeState(str){
+    try{
+      var bin=atob(str), u=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+      return JSON.parse(new TextDecoder().decode(u));
+    }catch(e){ return null; }
+  }
 
-  // ---------- Calcoli ----------
+  // ===============================
+  // Calcoli
+  // ===============================
   function areaLorda(){ return num(state.capannone.lunghezza)*num(state.capannone.larghezza); }
   function areaDecubitoReale(){ return areaLorda()*num(state.capannone.quotaDecubito)/100; }
   function ingrassoMqPerCapo(peso){
@@ -55,22 +83,23 @@
     return {stato:stato, pct: Math.round(ratio*100)};
   }
 
-  // ---------- Località: parser TXT ----------
+  // ===============================
+  // Località: parser TXT (neve/vento) — robusto a separatori diversi
+  // ===============================
   function parseLocalitaTxt(txt){
-    var lines = txt.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean).filter(function(l){return !/^#|^\/\//.test(l);});
+    var lines = txt.split(/\r?\n/).map(function(l){return l.trim();})
+      .filter(Boolean).filter(function(l){return !/^#|^\/\//.test(l);});
     if (!lines.length) return [];
-    // scegli delimitatore
-    var cand = [ ";", "\t", ",", "|" ];
-    var delim = cand.find(function(d){ return (lines[0].indexOf(d) !== -1); }) || ";";
-    // identifica header
+    var cand = [";","\t",",","|"];
+    var delim = cand.find(function(d){ return (lines[0].indexOf(d)!==-1); }) || ";";
+
     var head = lines[0].split(delim).map(function(s){return s.trim().toLowerCase();});
     var hasHeader = head.some(function(h){ return /comune|localit|prov|neve|vento|zona/.test(h); });
     var start = hasHeader ? 1 : 0;
 
     function idxOf(rxArr){
-      for (var i=0;i<(hasHeader?head.length:0);i++){
+      for (var i=0;i<(hasHeader?head.length:0);i++)
         for (var j=0;j<rxArr.length;j++) if (rxArr[j].test(head[i])) return i;
-      }
       return -1;
     }
     var iComune = hasHeader ? idxOf([/comune|localit|citt/]) : 0;
@@ -98,7 +127,9 @@
     return out.sort(function(a,b){ return a.nome.localeCompare(b.nome,"it"); });
   }
 
-  // ---------- Helpers UI ----------
+  // ===============================
+  // Helpers UI
+  // ===============================
   function byId(id){ return document.getElementById(id); }
   function repoName(){
     var seg = location.pathname.split("/").filter(Boolean);
@@ -106,47 +137,77 @@
   }
   function setBadge(el, stato){
     var cls="badge";
-    if (stato==="Adeguato") cls+=" ok"; else if (stato==="Conforme") cls+=" mid"; else if (stato==="Non conforme") cls+=" ko";
+    if (stato==="Adeguato") cls+=" ok";
+    else if (stato==="Conforme") cls+=" mid";
+    else if (stato==="Non conforme") cls+=" ko";
     el.className=cls; el.textContent=stato;
   }
 
-  // ---------- Pagina 1 ----------
+  // ===============================
+  // Loader robusto per file (prova più percorsi)
+  // ===============================
+  function fetchFirst(paths, asText){
+    var getter = asText ? function(r){ return r.text(); } : function(r){ return r.json(); };
+    var chain = Promise.reject();
+    paths.forEach(function(path){
+      chain = chain.catch(function(){ 
+        return fetch(path, {cache:"no-store"}).then(function(r){
+          if(!r.ok) throw new Error("HTTP "+r.status+" @ "+path);
+          return getter(r);
+        });
+      });
+    });
+    return chain;
+  }
+
+  // ===============================
+  // Pagina 1 — bootstrap
+  // ===============================
   function initPagina1(){
-    // carica norme + località TXT + eventuale override cfg
     Promise.all([
-      fetch("./assets/data/norme.json",{cache:"no-store"}).then(function(r){if(!r.ok) throw new Error("norme.json"); return r.json();}),
-      fetch("public/documenti/C-S-A-maggio-2025.txt",{cache:"no-store"}).then(function(r){if(!r.ok) throw new Error("C-S-A-maggio-2025.txt"); return r.text();})
+      fetchFirst([
+        "./assets/data/norme.json",      // standard
+        "assets/data/norme.json",        // fallback relativo
+        "/assets/data/norme.json"        // fallback assoluto (se servisse)
+      ], false),
+      fetchFirst([
+        "public/documenti/C-S-A-maggio-2025.txt",     // standard (dentro /docs)
+        "./public/documenti/C-S-A-maggio-2025.txt",   // fallback relativo
+        "/public/documenti/C-S-A-maggio-2025.txt"     // fallback root (sconsigliato ma gestito)
+      ], true)
     ])
     .then(function(res){
       norme = res[0];
       localitaDB = parseLocalitaTxt(res[1]);
 
-      var cfg = getParam("cfg"); // override norme via impostazioni
+      // Override norme da ?cfg= (generato da impostazioni.html)
+      var cfg = getParam("cfg"); 
       var cfgObj = cfg ? decodeState(cfg) : null;
       if (cfgObj && cfgObj.norme) deepMerge(norme, cfgObj.norme);
 
-      var enc = getParam("s");   // stato preventivo in URL
+      // Stato preventivo da ?s=
+      var enc = getParam("s");   
       var incoming = enc ? decodeState(enc) : null;
       if (incoming) deepMerge(state, incoming);
 
-      // header
+      // Header
       byId("title").textContent = repoName();
       byId("revDate").textContent = new Date().toLocaleDateString("it-IT");
       byId("revVer").textContent = APP_VERSION;
 
-      // tema
+      // Tema
       var root = document.documentElement;
       root.setAttribute("data-theme","light");
       byId("themeBtn").addEventListener("click", function(){
         var isLight = root.getAttribute("data-theme")==="light";
-        root.setAttribute("data-theme", isLight?"dark":"light");
+        root.setAttribute("data-theme", isLight ? "dark" : "light");
         byId("themeBtn").textContent = isLight ? "☀️" : "🌙";
       });
 
-      // stampa
+      // Stampa
       byId("printBtn").addEventListener("click", function(){ window.print(); });
 
-      // località
+      // Località
       var selLoc = byId("loc");
       selLoc.innerHTML = '<option value="">— Seleziona località —</option>' +
         localitaDB.map(function(L){ return '<option value="'+L.id+'">'+L.nome+'</option>'; }).join("");
@@ -159,13 +220,14 @@
         if (!L){ badge.textContent="—"; badge.className="badge"; state.anagrafica.localita=""; return; }
         state.anagrafica.localitaId = id;
         state.anagrafica.localita = L.nome;
-        badge.textContent = "Neve "+(L.neve_kN_m2?L.neve_kN_m2.toFixed(2):"—")+" kN/m² · Vento "+(L.vento_m_s||"—")+" m/s"+(L.zonaNeve||L.zonaVento?(" (ZN "+(L.zonaNeve||"—")+" / ZV "+(L.zonaVento||"—")+")"):"");
+        badge.textContent = "Neve "+(L.neve_kN_m2?L.neve_kN_m2.toFixed(2):"—")+" kN/m² · Vento "+(L.vento_m_s||"—")+" m/s"+
+                            (L.zonaNeve||L.zonaVento?(" (ZN "+(L.zonaNeve||"—")+" / ZV "+(L.zonaVento||"—")+")"):"");
         badge.className="badge mid";
       }
       selLoc.addEventListener("change", updateLocBadge);
       updateLocBadge();
 
-      // anagrafica
+      // Anagrafica
       byId("cli").value = state.anagrafica.cliente;
       byId("rif").value = state.anagrafica.riferimento;
       byId("dat").value = state.anagrafica.data;
@@ -173,7 +235,7 @@
       byId("rif").addEventListener("input", function(e){ state.anagrafica.riferimento=e.target.value; });
       byId("dat").addEventListener("input", function(e){ state.anagrafica.data=e.target.value; });
 
-      // capannone
+      // Capannone
       byId("len").value = state.capannone.lunghezza;
       byId("wid").value = state.capannone.larghezza;
       byId("quo").value = state.capannone.quotaDecubito;
@@ -192,7 +254,7 @@
       });
       byId("not").addEventListener("input", function(e){ state.capannone.note=e.target.value; });
 
-      // popolazioni (layout “storico” + Livello)
+      // Popolazioni (layout “storico” + Livello)
       var specie=["bovineAdulte","toriRimonta","bufaleParto","manzeBovine","bufaleAdulte","manzeBufaline"];
       specie.forEach(function(k){
         byId("n-"+k).value = state.popolazioni[k].n;
@@ -213,7 +275,7 @@
       byId("ing-peso").addEventListener("input",function(e){ state.popolazioni.ingrasso.peso=num(e.target.value); refresh(); });
       byId("ing-liv").addEventListener("change",function(e){ state.popolazioni.ingrasso.livello=e.target.value; });
 
-      // unitari mostrati testualmente (dinamici dal dataset)
+      // Valori unitari testuali (dinamici dal dataset)
       var mapVU = {
         bovineAdulte:"vu-bovineAdulte",
         manzeBovine:"vu-manzeBovine",
@@ -226,14 +288,14 @@
         var el = byId(mapVU[k]); if (el) el.textContent = (norme.unitari_mq[k]||0).toFixed(2);
       });
 
-      // check superficie (mostra %)
+      // Check superficie (mostra %)
       byId("checkBtn").addEventListener("click", function(){
         var cf = conformita();
         var btn = byId("checkBtn");
-        btn.textContent = "Check superficie: "+cf.pct+"% — "+cf.stato;
+        btn.textContent = "Check superficie: "+cf.pct+"% — "+cf.stato";
       });
 
-      // prosegui
+      // Prosegui
       var next = byId("btn-next");
       next.addEventListener("click", function(){
         var href = "impianti.html?s="+encodeURIComponent(encodeState(state));
@@ -241,26 +303,32 @@
         location.href = href;
       });
 
+      // Refresh derivati
       function refresh(){
-        byId("areaLorda").textContent = fmt1(areaLorda());
-        byId("areaDecubito").textContent = fmt1(areaDecubitoReale());
+        byId("areaLorda").textContent     = fmt1(areaLorda());
+        byId("areaDecubito").textContent  = fmt1(areaDecubitoReale());
         byId("areaNormativa").textContent = fmt1(areaNormativaRichiesta());
-        byId("costoStruttura").textContent = costoStruttura().toLocaleString("it-IT",{style:"currency",currency:"EUR"});
+        byId("costoStruttura").textContent= costoStruttura().toLocaleString("it-IT",{style:"currency",currency:"EUR"});
 
         var cf = conformita();
         setBadge(byId("badge"), cf.stato);
         byId("badgePct").textContent = cf.pct+"%";
 
-        var ok = state.anagrafica.cliente.trim().length>0 && num(state.capannone.lunghezza)>0 && num(state.capannone.larghezza)>0;
+        var ok = state.anagrafica.cliente.trim().length>0 &&
+                 num(state.capannone.lunghezza)>0 &&
+                 num(state.capannone.larghezza)>0;
         next.disabled = !ok;
       }
       refresh();
 
-      // footer firma
-      byId("titleFooter").textContent = repoName();
+      // Footer firma
+      var tf = byId("titleFooter"); if (tf) tf.textContent = repoName();
     })
-    .catch(function(err){ alert("Errore inizializzazione: "+err.message); });
+    .catch(function(err){
+      alert("Errore inizializzazione: "+err.message);
+    });
   }
 
+  // Espone l’init al DOM
   global.PreventivoApp = { initPagina1:initPagina1 };
 })(window);
