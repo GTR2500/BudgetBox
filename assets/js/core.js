@@ -1,13 +1,7 @@
 /* assets/js/core.js */
 (function (global) {
-  // ===============================
-  // Config visibile (badge revisione)
-  // ===============================
   var APP_VERSION = "v0.1.1";
 
-  // ===============================
-  // Stato (solo in memoria; passa via URL)
-  // ===============================
   var state = {
     anagrafica: { cliente:"", localitaId:"", localita:"", riferimento:"", data: new Date().toISOString().slice(0,10) },
     capannone: { lunghezza:60, larghezza:25, prezzoMq:180, quotaDecubito:70, note:"Struttura metallica zincata, copertura sandwich 40 mm" },
@@ -22,12 +16,9 @@
     }
   };
 
-  var norme = null;     // da assets/data/norme.json (con eventuale override via ?cfg=)
-  var localitaDB = [];  // da public/documenti/C-S-A-maggio-2025.txt
+  var norme = null;
+  var localitaDB = [];
 
-  // ===============================
-  // Utils
-  // ===============================
   function num(v){ return Number(v||0); }
   function fmt1(v){ return (Math.round(v*10)/10).toFixed(1); }
   function deepMerge(t,s){
@@ -55,9 +46,6 @@
     }catch(e){ return null; }
   }
 
-  // ===============================
-  // Calcoli
-  // ===============================
   function areaLorda(){ return num(state.capannone.lunghezza)*num(state.capannone.larghezza); }
   function areaDecubitoReale(){ return areaLorda()*num(state.capannone.quotaDecubito)/100; }
   function ingrassoMqPerCapo(peso){
@@ -83,9 +71,7 @@
     return {stato:stato, pct: Math.round(ratio*100)};
   }
 
-  // ===============================
-  // Località: parser TXT (neve/vento)
-  // ===============================
+  // ----- Parser Località per file: REGIONE;PROV_CITTA_METROPOLITANA;SIGLA_PROV;COMUNE;COD_ISTAT_COMUNE;ZONA_SISMICA
   function parseLocalitaTxt(txt){
     var lines = txt.split(/\r?\n/).map(function(l){return l.trim();})
       .filter(Boolean).filter(function(l){return !/^#|^\/\//.test(l);});
@@ -93,43 +79,46 @@
     var cand = [";","\t",",","|"];
     var delim = cand.find(function(d){ return (lines[0].indexOf(d)!==-1); }) || ";";
 
-    var head = lines[0].split(delim).map(function(s){return s.trim().toLowerCase();});
-    var hasHeader = head.some(function(h){ return /comune|localit|prov|neve|vento|zona/.test(h); });
+    // header uppercase per robustezza
+    var head = lines[0].split(delim).map(function(s){return s.trim().toUpperCase();});
+    var hasHeader = head.some(function(h){ return /COMUNE|SIGLA_PROV|PROV_/i.test(h); });
     var start = hasHeader ? 1 : 0;
 
-    function idxOf(rxArr){
-      for (var i=0;i<(hasHeader?head.length:0);i++)
-        for (var j=0;j<rxArr.length;j++) if (rxArr[j].test(head[i])) return i;
-      return -1;
+    function idx(nameLike, fallback){
+      if (!hasHeader) return fallback;
+      for (var i=0;i<head.length;i++) if (head[i].indexOf(nameLike)>=0) return i;
+      return fallback;
     }
-    var iComune = hasHeader ? idxOf([/comune|localit|citt/]) : 0;
-    var iProv   = hasHeader ? idxOf([/prov/])                 : 1;
-    var iZn     = hasHeader ? idxOf([/zona.?neve|zn/])        : 2;
-    var iZv     = hasHeader ? idxOf([/zona.?vento|zv/])       : 3;
-    var iNeve   = hasHeader ? idxOf([/neve|kn\/?m2|knm2/])    : 4;
-    var iVento  = hasHeader ? idxOf([/vento|m\/s|velocit/])   : 5;
+
+    var iProvSig = idx("SIGLA_PROV", 2);
+    var iComune  = idx("COMUNE", 3);
+    var iProvAlt = idx("PROV_CITTA_METROPOLITANA", 1);
+    var iZonaSis = idx("ZONA_SISMICA", 5);
 
     var out=[];
     for (var r=start;r<lines.length;r++){
       var cols = lines[r].split(delim).map(function(s){return s.trim();});
       var comune = cols[iComune] || "";
-      var prov   = (cols[iProv]||"").toUpperCase();
+      var sigla  = (cols[iProvSig]||"").toUpperCase();
+      var prov   = sigla || (cols[iProvAlt]||"").toUpperCase();
       if (!comune) continue;
+
       var nome = comune + (prov?(" ("+prov+")"):"");
-      var id = nome.toLowerCase().replace(/[^\p{L}\p{N}]+/gu,"-").replace(/(^-|-$)/g,"");
+      var id = (comune + " " + prov).toLowerCase().replace(/[^\p{L}\p{N}]+/gu,"-").replace(/(^-|-$)/g,"");
+
       out.push({
-        id:id, nome:nome, provincia:prov||"",
-        zonaNeve: cols[iZn]||"", zonaVento: cols[iZv]||"",
-        neve_kN_m2: Number((cols[iNeve]||"").replace(",",".")) || 0,
-        vento_m_s:  Number((cols[iVento]||"").replace(",",".")) || 0
+        id:id,
+        nome:nome,
+        provincia:prov||"",
+        // campi meteo non presenti in questo file → li lasciamo vuoti
+        zonaNeve: "", zonaVento: "",
+        neve_kN_m2: 0, vento_m_s: 0,
+        zonaSismica: cols[iZonaSis] || ""
       });
     }
     return out.sort(function(a,b){ return a.nome.localeCompare(b.nome,"it"); });
   }
 
-  // ===============================
-  // Helpers UI
-  // ===============================
   function byId(id){ return document.getElementById(id); }
   function repoName(){
     var seg = location.pathname.split("/").filter(Boolean);
@@ -143,14 +132,11 @@
     el.className=cls; el.textContent=stato;
   }
 
-  // ===============================
-  // Loader robusto per file (prova più percorsi)
-  // ===============================
   function fetchFirst(paths, asText){
     var getter = asText ? function(r){ return r.text(); } : function(r){ return r.json(); };
     var chain = Promise.reject();
     paths.forEach(function(path){
-      chain = chain.catch(function(){ 
+      chain = chain.catch(function(){
         return fetch(path, {cache:"no-store"}).then(function(r){
           if(!r.ok) throw new Error("HTTP "+r.status+" @ "+path);
           return getter(r);
@@ -160,9 +146,6 @@
     return chain;
   }
 
-  // ===============================
-  // Pagina 1 — bootstrap
-  // ===============================
   function initPagina1(){
     Promise.all([
       fetchFirst([
@@ -180,22 +163,18 @@
       norme = res[0];
       localitaDB = parseLocalitaTxt(res[1]);
 
-      // Override norme da ?cfg= (generato da impostazioni.html)
-      var cfg = getParam("cfg"); 
+      var cfg = getParam("cfg");
       var cfgObj = cfg ? decodeState(cfg) : null;
       if (cfgObj && cfgObj.norme) deepMerge(norme, cfgObj.norme);
 
-      // Stato preventivo da ?s=
-      var enc = getParam("s");   
+      var enc = getParam("s");
       var incoming = enc ? decodeState(enc) : null;
       if (incoming) deepMerge(state, incoming);
 
-      // Header
       byId("title").textContent = repoName();
       byId("revDate").textContent = new Date().toLocaleDateString("it-IT");
       byId("revVer").textContent = APP_VERSION;
 
-      // Tema
       var root = document.documentElement;
       root.setAttribute("data-theme","light");
       byId("themeBtn").addEventListener("click", function(){
@@ -204,10 +183,9 @@
         byId("themeBtn").textContent = isLight ? "☀️" : "🌙";
       });
 
-      // Stampa
       byId("printBtn").addEventListener("click", function(){ window.print(); });
 
-      // Località
+      // Località (mostra solo COMUNE (SIGLA_PROV))
       var selLoc = byId("loc");
       selLoc.innerHTML = '<option value="">— Seleziona località —</option>' +
         localitaDB.map(function(L){ return '<option value="'+L.id+'">'+L.nome+'</option>'; }).join("");
@@ -220,14 +198,13 @@
         if (!L){ badge.textContent="—"; badge.className="badge"; state.anagrafica.localita=""; return; }
         state.anagrafica.localitaId = id;
         state.anagrafica.localita = L.nome;
-        badge.textContent = "Neve "+(L.neve_kN_m2?L.neve_kN_m2.toFixed(2):"—")+" kN/m² · Vento "+(L.vento_m_s||"—")+" m/s"+
-                            (L.zonaNeve||L.zonaVento?(" (ZN "+(L.zonaNeve||"—")+" / ZV "+(L.zonaVento||"—")+")"):"");
-        badge.className="badge mid";
+        // Non avendo dataset meteo in questo file, mostriamo placeholder coerenti
+        badge.textContent = "—";
+        badge.className="badge";
       }
       selLoc.addEventListener("change", updateLocBadge);
       updateLocBadge();
 
-      // Anagrafica
       byId("cli").value = state.anagrafica.cliente;
       byId("rif").value = state.anagrafica.riferimento;
       byId("dat").value = state.anagrafica.data;
@@ -235,7 +212,6 @@
       byId("rif").addEventListener("input", function(e){ state.anagrafica.riferimento=e.target.value; });
       byId("dat").addEventListener("input", function(e){ state.anagrafica.data=e.target.value; });
 
-      // Capannone
       byId("len").value = state.capannone.lunghezza;
       byId("wid").value = state.capannone.larghezza;
       byId("quo").value = state.capannone.quotaDecubito;
@@ -254,7 +230,6 @@
       });
       byId("not").addEventListener("input", function(e){ state.capannone.note=e.target.value; });
 
-      // Popolazioni (layout “storico” + Livello)
       var specie=["bovineAdulte","toriRimonta","bufaleParto","manzeBovine","bufaleAdulte","manzeBufaline"];
       specie.forEach(function(k){
         byId("n-"+k).value = state.popolazioni[k].n;
@@ -275,7 +250,6 @@
       byId("ing-peso").addEventListener("input",function(e){ state.popolazioni.ingrasso.peso=num(e.target.value); refresh(); });
       byId("ing-liv").addEventListener("change",function(e){ state.popolazioni.ingrasso.livello=e.target.value; });
 
-      // Valori unitari testuali (dinamici dal dataset)
       var mapVU = {
         bovineAdulte:"vu-bovineAdulte",
         manzeBovine:"vu-manzeBovine",
@@ -288,14 +262,12 @@
         var el = byId(mapVU[k]); if (el) el.textContent = (norme.unitari_mq[k]||0).toFixed(2);
       });
 
-      // Check superficie (mostra %)
       byId("checkBtn").addEventListener("click", function(){
         var cf = conformita();
         var btn = byId("checkBtn");
-        btn.textContent = "Check superficie: " + cf.pct + "% — " + cf.stato;  // <-- fix dell'apice
+        btn.textContent = "Check superficie: " + cf.pct + "% — " + cf.stato;
       });
 
-      // Prosegui
       var next = byId("btn-next");
       next.addEventListener("click", function(){
         var href = "impianti.html?s="+encodeURIComponent(encodeState(state));
@@ -303,7 +275,6 @@
         location.href = href;
       });
 
-      // Refresh derivati
       function refresh(){
         byId("areaLorda").textContent     = fmt1(areaLorda());
         byId("areaDecubito").textContent  = fmt1(areaDecubitoReale());
@@ -321,7 +292,6 @@
       }
       refresh();
 
-      // Footer firma
       var tf = byId("titleFooter"); if (tf) tf.textContent = repoName();
     })
     .catch(function(err){
@@ -329,6 +299,5 @@
     });
   }
 
-  // Espone l’init al DOM
   global.PreventivoApp = { initPagina1:initPagina1 };
 })(window);
