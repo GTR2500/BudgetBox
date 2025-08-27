@@ -1,4 +1,4 @@
-/* docs/assets/js/core.js */
+/* assets/js/core.js */
 (function (global) {
   // ===============================
   // Config visibile (badge revisione)
@@ -22,7 +22,7 @@
     }
   };
 
-  var norme = null;     // da docs/assets/data/norme.json (con eventuale override via ?cfg=)
+  var norme = null;     // da assets/data/norme.json (con eventuale override via ?cfg=)
   var localitaDB = [];  // da public/documenti/C-S-A-maggio-2025.txt
 
   // ===============================
@@ -84,7 +84,7 @@
   }
 
   // ===============================
-  // Località: parser TXT (neve/vento) — robusto a separatori diversi
+  // Località: parser TXT (neve/vento)
   // ===============================
   function parseLocalitaTxt(txt){
     var lines = txt.split(/\r?\n/).map(function(l){return l.trim();})
@@ -166,14 +166,14 @@
   function initPagina1(){
     Promise.all([
       fetchFirst([
-        "./assets/data/norme.json",      // standard
-        "assets/data/norme.json",        // fallback relativo
-        "/assets/data/norme.json"        // fallback assoluto (se servisse)
+        "./assets/data/norme.json",
+        "assets/data/norme.json",
+        "/assets/data/norme.json"
       ], false),
       fetchFirst([
-        "public/documenti/C-S-A-maggio-2025.txt",     // standard (dentro /docs)
-        "./public/documenti/C-S-A-maggio-2025.txt",   // fallback relativo
-        "/public/documenti/C-S-A-maggio-2025.txt"     // fallback root (sconsigliato ma gestito)
+        "public/documenti/C-S-A-maggio-2025.txt",
+        "./public/documenti/C-S-A-maggio-2025.txt",
+        "/public/documenti/C-S-A-maggio-2025.txt"
       ], true)
     ])
     .then(function(res){
@@ -292,7 +292,7 @@
       byId("checkBtn").addEventListener("click", function(){
         var cf = conformita();
         var btn = byId("checkBtn");
-        btn.textContent = "Check superficie: "+cf.pct+"% — "+cf.stato";
+        btn.textContent = "Check superficie: " + cf.pct + "% — " + cf.stato;  // <-- fix dell'apice
       });
 
       // Prosegui
