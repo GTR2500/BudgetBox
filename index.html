@@ -25,24 +25,25 @@
   <main class="container" style="padding-bottom:60px">
     <!-- ANAGRAFICA -->
     <section class="card">
-      <div class="toolbar" style="justify-content:space-between">
-        <h2 style="color:var(--brand)">Anagrafica</h2>
-        <div class="small">Dati meteo: <span id="locBadge" class="badge">—</span></div>
-      </div>
+      <h2 style="color:var(--brand)">Anagrafica</h2>
       <div class="row4">
         <label>Cliente <input id="cli" placeholder="Ragione sociale"></label>
+
+        <!-- Località con badge meteo SOPRA alla select -->
         <label>Località
+          <div class="small" style="margin-bottom:6px">Dati meteo: <span id="locBadge" class="badge">—</span></div>
           <select id="loc"></select>
         </label>
+
         <label>Riferimento <input id="rif" placeholder="Es. Rif. interno"></label>
         <label>Data <input id="dat" type="date"></label>
       </div>
     </section>
 
-    <!-- CAPANNONE -->
+    <!-- STRUTTURA (ex Capannone) -->
     <section class="card" style="margin-top:12px">
       <div class="toolbar" style="justify-content:space-between">
-        <h2 style="color:var(--brand)">Capannone</h2>
+        <h2 style="color:var(--brand)">Struttura</h2>
         <div class="toolbar" style="gap:10px">
           <span class="small">Stato superficie:</span>
           <span id="badge" class="badge">—</span>
