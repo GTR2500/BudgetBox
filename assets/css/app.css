@@ -120,6 +120,17 @@ footer{
 .badge.mid{border-color:#38bdf8;color:#075985;background:rgba(56,189,248,.12)}
 .badge.ko{border-color:#fb7185;color:#7f1d1d;background:rgba(251,113,133,.12)}
 
+/* Multilinea per badge meteo */
+.badge.meta{
+  white-space:normal;             /* consenti a-capo */
+  line-height:1.2;
+  display:inline-block;
+  max-width:680px;                /* evita che diventi troppo lungo */
+  text-align:right;               /* testuale coerente con posizione a destra */
+}
+.badge.meta .bline{display:block}
+.badge.meta .bline + .bline{margin-top:2px}
+
 /* ====== SPECIE (layout “storico”) ====== */
 .specie{display:grid;gap:8px}
 .specie .grid-2 > label:nth-child(3){grid-column:1/-1}
