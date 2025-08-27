@@ -1,100 +1,328 @@
-/* src/index.css */
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Preventivi Grimaldelli — Pagina 1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="./assets/css/app.css" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="container toolbar">
+      <h1 class="flex-1" style="flex:1">Preventivi Grimaldelli</h1>
+      <nav class="nav">
+        <a href="./index.html">1. Anagrafica</a>
+        <a class="dis" href="./impianti.html">2. Impianti</a>
+        <a class="dis" href="./accessori.html">3. Accessori</a>
+        <a class="dis" href="./riepilogo.html">4. Riepilogo</a>
+      </nav>
+    </div>
+  </header>
 
-/* Base molto leggera: non interferisce con Tailwind se presente */
-html, body {
-  height: 100%;
-}
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-* {
-  box-sizing: border-box;
-}
+  <main class="container" style="padding-bottom:60px">
+    <!-- ANAGRAFICA -->
+    <section class="card">
+      <h2>Anagrafica</h2>
+      <div class="row">
+        <label>Cliente
+          <input id="cli" placeholder="Ragione sociale">
+        </label>
+        <label>Località
+          <input id="loc" placeholder="Comune (prov.)">
+        </label>
+        <label>Riferimento
+          <input id="rif" placeholder="Es. Rif. interno">
+        </label>
+        <label>Data
+          <input id="dat" type="date">
+        </label>
+      </div>
+    </section>
 
-/* Supporto tema scuro (compatibilità generale) */
-.dark {
-  color-scheme: dark;
-}
+    <!-- CAPANNONE -->
+    <section class="card" style="margin-top:12px">
+      <div class="toolbar" style="justify-content:space-between">
+        <h2>Capannone</h2>
+        <div class="small">Stato superficie:
+          <span id="badge" class="badge">—</span>
+        </div>
+      </div>
 
-/* Utility compatibili con le classi usate in JSX (se non hai Tailwind) */
-.print\:hidden { }
-.print\:break-inside-avoid { }
-@media print {
-  .print\:hidden { display: none !important; }
-  .print\:break-inside-avoid { break-inside: avoid !important; page-break-inside: avoid !important; }
-}
+      <div class="row" style="margin-top:8px">
+        <label>Lunghezza (m)
+          <input id="len" type="number" step="1" min="0">
+        </label>
+        <label>Larghezza (m)
+          <input id="wid" type="number" step="1" min="0">
+        </label>
+        <label>Quota area di decubito (%)
+          <input id="quo" type="number" step="1" min="0" max="100">
+        </label>
+        <label>Prezzo struttura (€/m²)
+          <input id="prz" type="number" step="1" min="0">
+        </label>
+      </div>
 
-/* Migliorie tabelle */
-table {
-  border-collapse: collapse;
-}
-th, td {
-  padding: 0.5rem;
-  vertical-align: top;
-}
+      <div class="row" style="margin-top:12px">
+        <div class="card">
+          <div class="small">Area lorda</div>
+          <div class="value"><span id="areaLorda">0.0</span> m²</div>
+        </div>
+        <div class="card">
+          <div class="small">Area decubito (reale)</div>
+          <div class="value"><span id="areaDecubito">0.0</span> m²</div>
+        </div>
+        <div class="card">
+          <div class="small">Area normativa richiesta</div>
+          <div class="value"><span id="areaNormativa">0.0</span> m²</div>
+        </div>
+      </div>
 
-/* ============ STAMPA / PDF ============ */
+      <label style="margin-top:12px">Note
+        <input id="not" placeholder="Note tecniche...">
+      </label>
+    </section>
 
-@page {
-  /* A4 verticale e margini comodi per intestazione e piede */
-  size: A4;
-  margin: 14mm 12mm;
-}
+    <!-- POPOLAZIONI & STABULAZIONI -->
+    <section class="card" style="margin-top:12px">
+      <h2>Popolazioni & stabulazioni</h2>
 
-@media print {
-  /* sfondo bianco e colori fedeli */
-  html, body {
-    background: #fff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
+      <div class="row" style="margin-top:8px">
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3>Bovine adulte</h3><div class="small"><span id="cnt-bovineAdulte">0</span> capi</div>
+          </div>
+          <div class="row">
+            <label>N. capi <input id="n-bovineAdulte" type="number" min="0"></label>
+            <label>Stabulazione
+              <select id="s-bovineAdulte"></select>
+            </label>
+          </div>
+          <div class="small" style="margin-top:4px">Valore unitario: 6.50 m²/capo</div>
+        </div>
 
-  /* Rimuovi elementi non necessari nel PDF */
-  header, nav, .no-print, .print\:hidden {
-    display: none !important;
-  }
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3>Manze bovine</h3><div class="small"><span id="cnt-manzeBovine">0</span> capi</div>
+          </div>
+          <div class="row">
+            <label>N. capi <input id="n-manzeBovine" type="number" min="0"></label>
+            <label>Stabulazione
+              <select id="s-manzeBovine"></select>
+            </label>
+          </div>
+          <div class="small" style="margin-top:4px">Valore unitario: 3.80 m²/capo</div>
+        </div>
 
-  /* Layout contenuti */
-  main {
-    max-width: none !important;
-    padding: 0 !important;
-  }
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3>Tori da rimonta</h3><div class="small"><span id="cnt-toriRimonta">0</span> capi</div>
+          </div>
+          <div class="row">
+            <label>N. capi <input id="n-toriRimonta" type="number" min="0"></label>
+            <label>Stabulazione
+              <select id="s-toriRimonta"></select>
+            </label>
+          </div>
+          <div class="small" style="margin-top:4px">Valore unitario: 9.50 m²/capo</div>
+        </div>
 
-  /* Evita spezzature brutte su card/section */
-  section, .card, .rounded-2xl, .rounded-xl {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3>Bufale adulte</h3><div class="small"><span id="cnt-bufaleAdulte">0</span> capi</div>
+          </div>
+          <div class="row">
+            <label>N. capi <input id="n-bufaleAdulte" type="number" min="0"></label>
+            <label>Stabulazione
+              <select id="s-bufaleAdulte"></select>
+            </label>
+          </div>
+          <div class="small" style="margin-top:4px">Valore unitario: 6.00 m²/capo</div>
+        </div>
 
-  /* Tabelle: ripeti thead, evita righe spezzate */
-  thead { display: table-header-group; }
-  tfoot { display: table-footer-group; }
-  tr, img { page-break-inside: avoid; }
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3>Bufale al parto</h3><div class="small"><span id="cnt-bufaleParto">0</span> capi</div>
+          </div>
+          <div class="row">
+            <label>N. capi <input id="n-bufaleParto" type="number" min="0"></label>
+            <label>Stabulazione
+              <select id="s-bufaleParto"></select>
+            </label>
+          </div>
+          <div class="small" style="margin-top:4px">Valore unitario: 7.50 m²/capo</div>
+        </div>
 
-  /* Ombre in stampa: rimuovile per nitidezza */
-  * {
-    box-shadow: none !important;
-    text-shadow: none !important;
-  }
-}
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3>Manze bufaline</h3><div class="small"><span id="cnt-manzeBufaline">0</span> capi</div>
+          </div>
+          <div class="row">
+            <label>N. capi <input id="n-manzeBufaline" type="number" min="0"></label>
+            <label>Stabulazione
+              <select id="s-manzeBufaline"></select>
+            </label>
+          </div>
+          <div class="small" style="margin-top:4px">Valore unitario: 3.50 m²/capo</div>
+        </div>
+      </div>
 
-/* Piccola rifinitura per pulsanti/base (se Tailwind non è attivo) */
-button, input, select, textarea {
-  font: inherit;
-}
-button {
-  cursor: pointer;
-}
-input, select, textarea {
-  border: 1px solid rgba(0,0,0,0.15);
-  border-radius: 10px;
-  padding: 0.5rem 0.6rem;
-  background: #fff;
-}
+      <div class="card" style="margin-top:12px">
+        <h3>Bovini da ingrasso</h3>
+        <div class="row">
+          <label>N. gruppi <input id="ing-gr" type="number" min="0"></label>
+          <label>Capi per gruppo <input id="ing-cpg" type="number" min="0"></label>
+          <label>Peso medio (kg) <input id="ing-peso" type="number" min="0"></label>
+          <label>Livello
+            <select id="ing-liv">
+              <option>Adeguato</option>
+              <option>Modesto</option>
+              <option>Ottimo</option>
+            </select>
+          </label>
+        </div>
+        <div class="small" style="margin-top:6px">Valori unitari stimati: min 3.25 – adeg 4.25 – opt 5.25 m²/capo</div>
+      </div>
+    </section>
 
-/* Bordo arancione coerente con UI */
-.border {
-  border: 1px solid rgba(253, 186, 116, 0.8);
-}
+    <div class="toolbar" style="margin-top:12px;justify-content:flex-end">
+      <a class="nav" href="./impianti.html"><button id="btn-next" disabled>Prosegui alla pagina 2</button></a>
+    </div>
+  </main>
+
+  <script type="module">
+    import { loadDataset, loadState, saveState, areaLorda, areaDecubitoReale, areaNormativaRichiesta, conformita, costoStruttura, fmt1, num } from "./assets/js/state.js";
+
+    const stabulazioniSelectIds = [
+      "s-bovineAdulte","s-manzeBovine","s-toriRimonta","s-bufaleAdulte","s-bufaleParto","s-manzeBufaline"
+    ];
+    const countSpans = {
+      bovineAdulte: document.getElementById("cnt-bovineAdulte"),
+      manzeBovine: document.getElementById("cnt-manzeBovine"),
+      toriRimonta: document.getElementById("cnt-toriRimonta"),
+      bufaleAdulte: document.getElementById("cnt-bufaleAdulte"),
+      bufaleParto: document.getElementById("cnt-bufaleParto"),
+      manzeBufaline: document.getElementById("cnt-manzeBufaline")
+    };
+
+    const el = {
+      cli:  document.getElementById("cli"),
+      loc:  document.getElementById("loc"),
+      rif:  document.getElementById("rif"),
+      dat:  document.getElementById("dat"),
+      len:  document.getElementById("len"),
+      wid:  document.getElementById("wid"),
+      quo:  document.getElementById("quo"),
+      prz:  document.getElementById("prz"),
+      not:  document.getElementById("not"),
+      badge: document.getElementById("badge"),
+      areaLorda: document.getElementById("areaLorda"),
+      areaDecubito: document.getElementById("areaDecubito"),
+      areaNormativa: document.getElementById("areaNormativa"),
+      n: {
+        bovineAdulte: document.getElementById("n-bovineAdulte"),
+        manzeBovine: document.getElementById("n-manzeBovine"),
+        toriRimonta: document.getElementById("n-toriRimonta"),
+        bufaleAdulte: document.getElementById("n-bufaleAdulte"),
+        bufaleParto: document.getElementById("n-bufaleParto"),
+        manzeBufaline: document.getElementById("n-manzeBufaline")
+      },
+      s: {
+        bovineAdulte: document.getElementById("s-bovineAdulte"),
+        manzeBovine: document.getElementById("s-manzeBovine"),
+        toriRimonta: document.getElementById("s-toriRimonta"),
+        bufaleAdulte: document.getElementById("s-bufaleAdulte"),
+        bufaleParto: document.getElementById("s-bufaleParto"),
+        manzeBufaline: document.getElementById("s-manzeBufaline")
+      },
+      ing: {
+        gr: document.getElementById("ing-gr"),
+        cpg: document.getElementById("ing-cpg"),
+        peso: document.getElementById("ing-peso"),
+        liv: document.getElementById("ing-liv")
+      },
+      next: document.getElementById("btn-next")
+    };
+
+    const state = loadState();
+    const norme = await loadDataset();
+
+    // Popola select stabulazioni
+    for (const id of stabulazioniSelectIds) {
+      const s = document.getElementById(id);
+      s.innerHTML = norme.stabulazioni.map(v=>`<option value="${v}">${v}</option>`).join("");
+    }
+
+    // Inizializza UI con stato
+    el.cli.value = state.anagrafica.cliente;
+    el.loc.value = state.anagrafica.localita;
+    el.rif.value = state.anagrafica.riferimento;
+    el.dat.value = state.anagrafica.data;
+
+    el.len.value = state.capannone.lunghezza;
+    el.wid.value = state.capannone.larghezza;
+    el.quo.value = state.capannone.quotaDecubito;
+    el.prz.value = state.capannone.prezzoMq;
+    el.not.value = state.capannone.note;
+
+    for (const k of Object.keys(el.n)){
+      el.n[k].value = state.popolazioni[k].n;
+      el.s[k].value = state.popolazioni[k].stab;
+      countSpans[k].textContent = state.popolazioni[k].n || 0;
+    }
+    el.ing.gr.value   = state.popolazioni.ingrasso.gruppi;
+    el.ing.cpg.value  = state.popolazioni.ingrasso.capiPerGruppo;
+    el.ing.peso.value = state.popolazioni.ingrasso.peso;
+    el.ing.liv.value  = state.popolazioni.ingrasso.livello;
+
+    // Listeners
+    const setAndSave = (path, value)=>{
+      const seg = path.split(".");
+      let obj = state;
+      while (seg.length>1){ obj = obj[seg.shift()]; }
+      obj[seg[0]] = value;
+      saveState(state);
+      refresh();
+    };
+
+    el.cli.addEventListener("input", e=>setAndSave("anagrafica.cliente", e.target.value));
+    el.loc.addEventListener("input", e=>setAndSave("anagrafica.localita", e.target.value));
+    el.rif.addEventListener("input", e=>setAndSave("anagrafica.riferimento", e.target.value));
+    el.dat.addEventListener("input", e=>setAndSave("anagrafica.data", e.target.value));
+
+    el.len.addEventListener("input", e=>setAndSave("capannone.lunghezza", num(e.target.value)));
+    el.wid.addEventListener("input", e=>setAndSave("capannone.larghezza", num(e.target.value)));
+    el.quo.addEventListener("input", e=>setAndSave("capannone.quotaDecubito", num(e.target.value)));
+    el.prz.addEventListener("input", e=>setAndSave("capannone.prezzoMq", num(e.target.value)));
+    el.not.addEventListener("input", e=>setAndSave("capannone.note", e.target.value));
+
+    for (const k of Object.keys(el.n)){
+      el.n[k].addEventListener("input", e=>{
+        setAndSave(`popolazioni.${k}.n`, num(e.target.value));
+        countSpans[k].textContent = e.target.value || 0;
+      });
+      el.s[k].addEventListener("change", e=>setAndSave(`popolazioni.${k}.stab`, e.target.value));
+    }
+    el.ing.gr.addEventListener("input",  e=>setAndSave("popolazioni.ingrasso.gruppi", num(e.target.value)));
+    el.ing.cpg.addEventListener("input", e=>setAndSave("popolazioni.ingrasso.capiPerGruppo", num(e.target.value)));
+    el.ing.peso.addEventListener("input",e=>setAndSave("popolazioni.ingrasso.peso", num(e.target.value)));
+    el.ing.liv.addEventListener("change",e=>setAndSave("popolazioni.ingrasso.livello", e.target.value));
+
+    // Refresh derivati
+    function refresh(){
+      el.areaLorda.textContent    = fmt1(areaLorda(state));
+      el.areaDecubito.textContent = fmt1(areaDecubitoReale(state));
+      el.areaNormativa.textContent= fmt1(areaNormativaRichiesta(state, norme));
+
+      const cf = conformita(state, norme);
+      el.badge.textContent = cf.stato;
+      el.badge.className = "badge " + (cf.stato==="Adeguato"?"ok":cf.stato==="Conforme"?"mid":cf.stato==="Non conforme"?"ko":"");
+
+      // Abilita "Prosegui" se anagrafica + dimensioni ok
+      const okBase = state.anagrafica.cliente.trim().length>0 && num(state.capannone.lunghezza)>0 && num(state.capannone.larghezza)>0;
+      el.next.disabled = !okBase;
+    }
+    refresh();
+  </script>
+</body>
+</html>
