@@ -1,25 +1,41 @@
-:root{--gap:12px;--radius:14px;--bg:#0f1115;--panel:#111827;--border:#2a2f3a;--text:#e6e6e6;--muted:#9aa4b2}
+:root{
+  --gap:12px;--radius:14px;
+  --brand:#ff7f2a;                /* arancione sezioni e titolo */
+  --bg:#0f1115;--panel:#111827;--border:#ff7f2a44;
+  --text:#0f172a;--muted:#475569;--chip:#f8fafc;       /* usiamo tema chiaro di default via data-theme="light" */
+}
+:root[data-theme="dark"]{
+  --bg:#0f1115;--panel:#111827;--text:#e6e6e6;--muted:#9aa4b2;--chip:#0b1220;--border:#ff7f2a55;
+}
 *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 html,body{margin:0;background:var(--bg);color:var(--text)}
-header{position:sticky;top:0;z-index:50;background:rgba(17,24,39,.85);backdrop-filter:saturate(130%) blur(6px);border-bottom:1px solid var(--border)}
-.container{max-width:1100px;margin:0 auto;padding:18px}
+header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--panel) 88%, transparent);border-bottom:1px solid var(--border);backdrop-filter:saturate(130%) blur(6px)}
+.container{max-width:1100px;margin:0 auto;padding:14px 18px}
 h1,h2,h3{margin:0 0 8px}
-h1{font-size:22px;text-align:center}
+h1{font-size:22px;text-align:center;color:var(--brand)}
 .grid{display:grid;gap:var(--gap)}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
 label{font-size:13px;display:grid;gap:6px}
-input,select{background:#0b1220;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px;font-size:14px}
+input,select{background:var(--chip);border:1px solid #2a2f3a33;color:inherit;border-radius:10px;padding:10px;font-size:14px}
 .small{font-size:12px;color:var(--muted)}
 .value{font-weight:600}
-.row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gap)}
-@media (max-width:880px){.row{grid-template-columns:1fr 1fr}}
-.badge{padding:6px 10px;border-radius:999px;border:1px solid var(--border);font-size:12px}
-.badge.ok{border-color:#34d399;color:#b3f7d0}
-.badge.mid{border-color:#38bdf8;color:#bde9ff}
-.badge.ko{border-color:#fb7185;color:#fecad1}
+.row4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gap)}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gap)}
+@media (max-width:880px){.row4{grid-template-columns:1fr 1fr}.row2{grid-template-columns:1fr}}
+.badge{padding:6px 10px;border-radius:999px;border:1px solid var(--border);font-size:12px;background:var(--chip)}
+.badge.ok{border-color:#34d399;color:#065f46;background:color-mix(in srgb,#34d399 12%, transparent)}
+.badge.mid{border-color:#38bdf8;color:#075985;background:color-mix(in srgb,#38bdf8 12%, transparent)}
+.badge.ko{border-color:#fb7185;color:#7f1d1d;background:color-mix(in srgb,#fb7185 12%, transparent)}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.nav a{padding:6px 10px;border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--text);background:#0b1220}
+.nav a{padding:6px 10px;border:1px solid var(--border);border-radius:10px;text-decoration:none;color:inherit;background:var(--chip)}
 .nav a.disabled{opacity:.45;pointer-events:none}
-button{background:#0b1220;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 12px;cursor:pointer}
-button:hover{background:#172033}
-.btn-primary{border-color:#38bdf8}
+.btn{background:var(--chip);border:1px solid var(--border);color:inherit;border-radius:10px;padding:10px 12px;cursor:pointer}
+.btn:hover{filter:brightness(1.07)}
+.btn-ghost{background:transparent;border:1px dashed var(--border)}
+.header-right{display:flex;gap:8px;align-items:center}
+.rev{font-size:11px;border:1px dashed var(--border);padding:4px 8px;border-radius:999px;background:color-mix(in srgb,var(--brand) 10%, transparent)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo img{height:32px;width:auto;border-radius:6px}
+footer{position:fixed;right:8px;bottom:8px;font-size:12px;color:var(--muted);pointer-events:none}
+.specie{display:grid;gap:8px}
+.specie .row2 > label:nth-child(3){grid-column:1/-1}
