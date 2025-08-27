@@ -45,9 +45,10 @@ h1,h2,h3{margin:0 0 8px}
 h1{font-size:22px;text-align:center;color:var(--brand)}
 
 .grid{display:grid;gap:12px}
-.row4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-@media (max-width:880px){.row4{grid-template-columns:1fr 1fr}.row2{grid-template-columns:1fr}}
+.grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:880px){.grid-4{grid-template-columns:1fr 1fr}.grid-2{grid-template-columns:1fr}}
+@media (max-width:560px){.grid-4{grid-template-columns:1fr}}
 
 .card{
   background:var(--panel);
@@ -57,14 +58,18 @@ h1{font-size:22px;text-align:center;color:var(--brand)}
   box-shadow:var(--shadow);
 }
 
-label{font-size:13px;display:grid;gap:6px}
+label{font-size:13px;display:flex;flex-direction:column;gap:6px}
+label > span{font-size:13px;color:var(--muted)}
 input,select{
+  width:100%;
   background:var(--chip);
   border:1px solid var(--input-border);
   color:var(--text);
   border-radius:10px;
-  padding:10px;
+  padding:10px 12px;
   font-size:14px;
+  height:44px;               /* altezza uniforme */
+  line-height:22px;
 }
 input::placeholder{color:var(--muted);opacity:.75}
 input:focus,select:focus{outline:2px solid var(--brand);outline-offset:1px}
@@ -83,6 +88,7 @@ input:focus,select:focus{outline:2px solid var(--brand);outline-offset:1px}
   border-radius:10px;
   padding:10px 12px;
   cursor:pointer;
+  height:40px;
 }
 .btn:hover{filter:brightness(1.04)}
 .btn-ghost{background:transparent;border:1px dashed var(--border)}
@@ -107,7 +113,8 @@ footer{
 /* ====== BADGE ====== */
 .badge{
   padding:6px 10px;border-radius:999px;
-  border:1px solid var(--border);font-size:12px;background:var(--chip);color:var(--text)
+  border:1px solid var(--border);font-size:12px;background:var(--chip);color:var(--text);
+  white-space:nowrap;
 }
 .badge.ok{border-color:#34d399;color:#065f46;background:rgba(52,211,153,.12)}
 .badge.mid{border-color:#38bdf8;color:#075985;background:rgba(56,189,248,.12)}
@@ -115,7 +122,17 @@ footer{
 
 /* ====== SPECIE (layout “storico”) ====== */
 .specie{display:grid;gap:8px}
-.specie .row2 > label:nth-child(3){grid-column:1/-1}
+.specie .grid-2 > label:nth-child(3){grid-column:1/-1}
+
+/* ====== POSIZIONAMENTO BADGE METEO SOPRA LOCALITÀ ====== */
+.fld-localita{position:relative}
+.fld-localita .badge-meteo{
+  position:absolute;
+  top:-28px;                 /* sopra il campo senza spingere la riga */
+  left:50%;
+  transform:translateX(-50%);
+  z-index:1;
+}
 
 /* ====== UTILITA’ VISIVE ====== */
 hr{border:none;border-top:1px solid var(--line);margin:12px 0}
