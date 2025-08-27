@@ -1,233 +1,266 @@
 /* docs/assets/js/core.js */
 (function (global) {
-  // ---------------------------
-  // Stato (in memoria) + dataset
-  // ---------------------------
+  // Versione visibile nel badge
+  var APP_VERSION = "v0.1.1";
+
+  // Stato (solo in memoria; passa tra pagine via URL)
   var state = {
-    anagrafica: { cliente: "", localita: "", riferimento: "", data: new Date().toISOString().slice(0,10) },
-    capannone: { lunghezza: 60, larghezza: 25, prezzoMq: 180, quotaDecubito: 70, note: "Struttura metallica zincata, copertura sandwich 40 mm" },
+    anagrafica: { cliente:"", localitaId:"", localita:"", riferimento:"", data: new Date().toISOString().slice(0,10) },
+    capannone: { lunghezza:60, larghezza:25, prezzoMq:180, quotaDecubito:70, note:"Struttura metallica zincata, copertura sandwich 40 mm" },
     popolazioni: {
-      bovineAdulte:  { n: 0, stab: "lettiera" },
-      manzeBovine:   { n: 0, stab: "lettiera" },
-      toriRimonta:   { n: 0, stab: "libera"   },
-      bufaleAdulte:  { n: 0, stab: "lettiera" },
-      bufaleParto:   { n: 0, stab: "lettiera" },
-      manzeBufaline: { n: 0, stab: "lettiera" },
-      ingrasso: { gruppi: 0, capiPerGruppo: 0, peso: 550, livello: "Adeguato" }
+      bovineAdulte:{ n:0, stab:"lettiera", livello:"Adeguato" },
+      manzeBovine:{ n:0, stab:"lettiera", livello:"Adeguato" },
+      toriRimonta:{ n:0, stab:"libera",   livello:"Adeguato" },
+      bufaleAdulte:{ n:0, stab:"lettiera", livello:"Adeguato" },
+      bufaleParto:{ n:0, stab:"lettiera", livello:"Adeguato" },
+      manzeBufaline:{ n:0, stab:"lettiera", livello:"Adeguato" },
+      ingrasso:{ gruppi:0, capiPerGruppo:0, peso:550, livello:"Adeguato" }
     }
   };
-  var norme = null;
 
-  // ---------------------------
-  // Utilità
-  // ---------------------------
-  function num(v){ return Number(v || 0); }
+  var norme = null;        // da docs/assets/data/norme.json (+ override via cfg)
+  var localitaDB = [];     // da public/documenti/C-S-A-maggio-2025.txt
+
+  // ---------- Utils ----------
+  function num(v){ return Number(v||0); }
   function fmt1(v){ return (Math.round(v*10)/10).toFixed(1); }
-  function deepMerge(target, source){
-    if (!source || typeof source !== "object") return target;
-    Object.keys(source).forEach(function(k){
-      if (source[k] && typeof source[k] === "object" && !Array.isArray(source[k])) {
-        target[k] = deepMerge(target[k] || {}, source[k]);
-      } else {
-        target[k] = source[k];
-      }
-    });
-    return target;
-  }
+  function deepMerge(t,s){ if(!s||typeof s!=="object") return t; Object.keys(s).forEach(function(k){ if(s[k]&&typeof s[k]==="object"&&!Array.isArray(s[k])) t[k]=deepMerge(t[k]||{},s[k]); else t[k]=s[k];}); return t; }
+  function getParam(name){ var m=new RegExp("[?&]"+name+"=([^&]*)").exec(location.search); return m?decodeURIComponent(m[1]):null; }
+  function encodeState(o){ var json=JSON.stringify(o),b=new TextEncoder().encode(json),s=""; for(var i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s); }
+  function decodeState(str){ try{ var bin=atob(str),u=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return JSON.parse(new TextDecoder().decode(u)); }catch(e){ return null; } }
 
-  // Stato in URL (no storage locale)
-  function encodeState(obj){
-    var json = JSON.stringify(obj);
-    var bytes = new TextEncoder().encode(json);
-    var bin = "";
-    for (var i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
-    return btoa(bin);
-  }
-  function decodeState(str){
-    try{
-      var bin = atob(str);
-      var bytes = new Uint8Array(bin.length);
-      for (var i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
-      var json = new TextDecoder().decode(bytes);
-      return JSON.parse(json);
-    } catch(e){ return null; }
-  }
-  function getParam(name){
-    var m = new RegExp("[?&]"+name+"=([^&]*)").exec(location.search);
-    return m ? decodeURIComponent(m[1]) : null;
-  }
-
-  // ---------------------------
-  // Calcoli
-  // ---------------------------
-  function areaLorda(){ return num(state.capannone.lunghezza) * num(state.capannone.larghezza); }
-  function areaDecubitoReale(){ return areaLorda() * num(state.capannone.quotaDecubito) / 100; }
+  // ---------- Calcoli ----------
+  function areaLorda(){ return num(state.capannone.lunghezza)*num(state.capannone.larghezza); }
+  function areaDecubitoReale(){ return areaLorda()*num(state.capannone.quotaDecubito)/100; }
   function ingrassoMqPerCapo(peso){
     var arr = norme.ingrasso.mq_per_capo;
-    for (var i=0;i<arr.length;i++){ if (peso <= arr[i].maxPesoKg) return arr[i].mq; }
+    for (var i=0;i<arr.length;i++){ if(peso<=arr[i].maxPesoKg) return arr[i].mq; }
     return arr[arr.length-1].mq;
   }
   function areaNormativaRichiesta(){
-    var u = norme.unitari_mq, p = state.popolazioni;
-    var base =
-      num(p.bovineAdulte.n)  * u.bovineAdulte  +
-      num(p.manzeBovine.n)   * u.manzeBovine   +
-      num(p.toriRimonta.n)   * u.toriRimonta   +
-      num(p.bufaleAdulte.n)  * u.bufaleAdulte  +
-      num(p.bufaleParto.n)   * u.bufaleParto   +
-      num(p.manzeBufaline.n) * u.manzeBufaline;
-    var nIngrasso = num(p.ingrasso.gruppi) * num(p.ingrasso.capiPerGruppo);
-    var mqIngrasso = nIngrasso * ingrassoMqPerCapo(num(p.ingrasso.peso));
-    return base + mqIngrasso;
+    var u=norme.unitari_mq, p=state.popolazioni;
+    var base = num(p.bovineAdulte.n)*u.bovineAdulte + num(p.manzeBovine.n)*u.manzeBovine +
+               num(p.toriRimonta.n)*u.toriRimonta   + num(p.bufaleAdulte.n)*u.bufaleAdulte +
+               num(p.bufaleParto.n)*u.bufaleParto   + num(p.manzeBufaline.n)*u.manzeBufaline;
+    var nIng = num(p.ingrasso.gruppi)*num(p.ingrasso.capiPerGruppo);
+    var mqIng = nIng*ingrassoMqPerCapo(num(p.ingrasso.peso));
+    return base + mqIng;
   }
-  function costoStruttura(){ return areaLorda() * num(state.capannone.prezzoMq); }
+  function costoStruttura(){ return areaLorda()*num(state.capannone.prezzoMq); }
   function conformita(){
-    var req = areaNormativaRichiesta();
-    var real = areaDecubitoReale();
-    if (req === 0 && real === 0) return { stato:"—", ratio:1 };
+    var req=areaNormativaRichiesta(), real=areaDecubitoReale();
+    if(req===0 && real===0) return {stato:"—", pct:100};
     var ratio = req>0 ? real/req : 0;
     var stato = ratio>=1.1 ? "Adeguato" : (ratio>=1.0 ? "Conforme" : "Non conforme");
-    return { stato:stato, ratio:ratio };
+    return {stato:stato, pct: Math.round(ratio*100)};
   }
 
-  // ---------------------------
-  // UI helpers
-  // ---------------------------
-  function byId(id){ return document.getElementById(id); }
-  function setBadge(el, stato){
-    var cls = "badge";
-    if (stato==="Adeguato") cls += " ok";
-    else if (stato==="Conforme") cls += " mid";
-    else if (stato==="Non conforme") cls += " ko";
-    el.className = cls; el.textContent = stato;
-  }
+  // ---------- Località: parser TXT ----------
+  function parseLocalitaTxt(txt){
+    var lines = txt.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean).filter(function(l){return !/^#|^\/\//.test(l);});
+    if (!lines.length) return [];
+    // scegli delimitatore
+    var cand = [ ";", "\t", ",", "|" ];
+    var delim = cand.find(function(d){ return (lines[0].indexOf(d) !== -1); }) || ";";
+    // identifica header
+    var head = lines[0].split(delim).map(function(s){return s.trim().toLowerCase();});
+    var hasHeader = head.some(function(h){ return /comune|localit|prov|neve|vento|zona/.test(h); });
+    var start = hasHeader ? 1 : 0;
 
-  // ---------------------------
-  // Bootstrap pagina 1
-  // ---------------------------
-  function initPagina1(){
-    // dataset da repo
-    fetch("./assets/data/norme.json", { cache:"no-store" })
-      .then(function(r){ if(!r.ok) throw new Error("norme.json"); return r.json(); })
-      .then(function(json){
-        norme = json;
+    function idxOf(rxArr){
+      for (var i=0;i<(hasHeader?head.length:0);i++){
+        for (var j=0;j<rxArr.length;j++) if (rxArr[j].test(head[i])) return i;
+      }
+      return -1;
+    }
+    var iComune = hasHeader ? idxOf([/comune|localit|citt/]) : 0;
+    var iProv   = hasHeader ? idxOf([/prov/])                 : 1;
+    var iZn     = hasHeader ? idxOf([/zona.?neve|zn/])        : 2;
+    var iZv     = hasHeader ? idxOf([/zona.?vento|zv/])       : 3;
+    var iNeve   = hasHeader ? idxOf([/neve|kn\/?m2|knm2/])    : 4;
+    var iVento  = hasHeader ? idxOf([/vento|m\/s|velocit/])   : 5;
 
-        // se arriva stato da URL, merge
-        var enc = getParam("s");
-        var incoming = enc ? decodeState(enc) : null;
-        if (incoming) deepMerge(state, incoming);
-
-        // DOM refs
-        var el = {
-          cli: byId("cli"), loc: byId("loc"), rif: byId("rif"), dat: byId("dat"),
-          len: byId("len"), wid: byId("wid"), quo: byId("quo"), prz: byId("prz"), not: byId("not"),
-          badge: byId("badge"),
-          areaLorda: byId("areaLorda"), areaDecubito: byId("areaDecubito"), areaNormativa: byId("areaNormativa"),
-          n: {
-            bovineAdulte: byId("n-bovineAdulte"),
-            manzeBovine: byId("n-manzeBovine"),
-            toriRimonta: byId("n-toriRimonta"),
-            bufaleAdulte: byId("n-bufaleAdulte"),
-            bufaleParto: byId("n-bufaleParto"),
-            manzeBufaline: byId("n-manzeBufaline")
-          },
-          s: {
-            bovineAdulte: byId("s-bovineAdulte"),
-            manzeBovine: byId("s-manzeBovine"),
-            toriRimonta: byId("s-toriRimonta"),
-            bufaleAdulte: byId("s-bufaleAdulte"),
-            bufaleParto: byId("s-bufaleParto"),
-            manzeBufaline: byId("s-manzeBufaline")
-          },
-          ing: { gr: byId("ing-gr"), cpg: byId("ing-cpg"), peso: byId("ing-peso"), liv: byId("ing-liv") },
-          next: byId("btn-next")
-        };
-
-        // popola select stabulazioni da dataset
-        ["bovineAdulte","manzeBovine","toriRimonta","bufaleAdulte","bufaleParto","manzeBufaline"].forEach(function(k){
-          var html = norme.stabulazioni.map(function(v){ return '<option value="'+v+'">'+v+'</option>'; }).join("");
-          el.s[k].innerHTML = html;
-        });
-
-        // inizializza UI
-        el.cli.value = state.anagrafica.cliente;
-        el.loc.value = state.anagrafica.localita;
-        el.rif.value = state.anagrafica.riferimento;
-        el.dat.value = state.anagrafica.data;
-
-        el.len.value = state.capannone.lunghezza;
-        el.wid.value = state.capannone.larghezza;
-        el.quo.value = state.capannone.quotaDecubito;
-        el.prz.value = state.capannone.prezzoMq;
-        el.not.value = state.capannone.note;
-
-        Object.keys(el.n).forEach(function(k){
-          el.n[k].value = state.popolazioni[k].n;
-          el.s[k].value = state.popolazioni[k].stab;
-        });
-        el.ing.gr.value = state.popolazioni.ingrasso.gruppi;
-        el.ing.cpg.value = state.popolazioni.ingrasso.capiPerGruppo;
-        el.ing.peso.value = state.popolazioni.ingrasso.peso;
-        el.ing.liv.value = state.popolazioni.ingrasso.livello;
-
-        // listeners
-        function bind(idPath, setter){
-          setter(); // initial
-        }
-        el.cli.addEventListener("input", function(e){ state.anagrafica.cliente = e.target.value; refresh(); });
-        el.loc.addEventListener("input", function(e){ state.anagrafica.localita = e.target.value; refresh(); });
-        el.rif.addEventListener("input", function(e){ state.anagrafica.riferimento = e.target.value; refresh(); });
-        el.dat.addEventListener("input", function(e){ state.anagrafica.data = e.target.value; refresh(); });
-
-        el.len.addEventListener("input", function(e){ state.capannone.lunghezza = num(e.target.value); refresh(); });
-        el.wid.addEventListener("input", function(e){ state.capannone.larghezza = num(e.target.value); refresh(); });
-        el.quo.addEventListener("input", function(e){ state.capannone.quotaDecubito = num(e.target.value); refresh(); });
-        el.prz.addEventListener("input", function(e){ state.capannone.prezzoMq = num(e.target.value); refresh(); });
-        el.not.addEventListener("input", function(e){ state.capannone.note = e.target.value; });
-
-        Object.keys(el.n).forEach(function(k){
-          el.n[k].addEventListener("input", function(e){ state.popolazioni[k].n = num(e.target.value); refresh(); });
-          el.s[k].addEventListener("change", function(e){ state.popolazioni[k].stab = e.target.value; });
-        });
-        el.ing.gr.addEventListener("input", function(e){ state.popolazioni.ingrasso.gruppi = num(e.target.value); refresh(); });
-        el.ing.cpg.addEventListener("input", function(e){ state.popolazioni.ingrasso.capiPerGruppo = num(e.target.value); refresh(); });
-        el.ing.peso.addEventListener("input", function(e){ state.popolazioni.ingrasso.peso = num(e.target.value); refresh(); });
-        el.ing.liv .addEventListener("change", function(e){ state.popolazioni.ingrasso.livello = e.target.value; });
-
-        // refresh derivati + abilita/URL "Prosegui"
-        function refresh(){
-          el.areaLorda.textContent    = fmt1(areaLorda());
-          el.areaDecubito.textContent = fmt1(areaDecubitoReale());
-          el.areaNormativa.textContent= fmt1(areaNormativaRichiesta());
-
-          var cf = conformita();
-          setBadge(el.badge, cf.stato);
-
-          var okBase = state.anagrafica.cliente.trim().length>0 &&
-                       num(state.capannone.lunghezza)>0 &&
-                       num(state.capannone.larghezza)>0;
-          if (okBase){
-            var url = "impianti.html?s=" + encodeURIComponent(encodeState(state));
-            el.next.removeAttribute("disabled");
-            el.next.dataset.href = url; // lo useremo al click
-          } else {
-            el.next.setAttribute("disabled","");
-            el.next.dataset.href = "";
-          }
-        }
-        refresh();
-
-        // Click su "Prosegui": naviga solo se abilitato
-        el.next.addEventListener("click", function(){
-          var href = el.next.dataset.href || "";
-          if (href) location.href = href;
-        });
-      })
-      .catch(function(err){
-        alert("Errore nel caricamento del dataset: " + err.message);
+    var out=[];
+    for (var r=start;r<lines.length;r++){
+      var cols = lines[r].split(delim).map(function(s){return s.trim();});
+      var comune = cols[iComune] || "";
+      var prov   = (cols[iProv]||"").toUpperCase();
+      if (!comune) continue;
+      var nome = comune + (prov?(" ("+prov+")"):"");
+      var id = nome.toLowerCase().replace(/[^\p{L}\p{N}]+/gu,"-").replace(/(^-|-$)/g,"");
+      out.push({
+        id:id, nome:nome, provincia:prov||"",
+        zonaNeve: cols[iZn]||"", zonaVento: cols[iZv]||"",
+        neve_kN_m2: Number((cols[iNeve]||"").replace(",",".")) || 0,
+        vento_m_s:  Number((cols[iVento]||"").replace(",",".")) || 0
       });
+    }
+    return out.sort(function(a,b){ return a.nome.localeCompare(b.nome,"it"); });
   }
 
-  // Espone init per index.html
-  global.PreventivoApp = { initPagina1: initPagina1 };
+  // ---------- Helpers UI ----------
+  function byId(id){ return document.getElementById(id); }
+  function repoName(){
+    var seg = location.pathname.split("/").filter(Boolean);
+    return seg.length>=2 ? seg[1] : (seg[0]||"Preventivi");
+  }
+  function setBadge(el, stato){
+    var cls="badge";
+    if (stato==="Adeguato") cls+=" ok"; else if (stato==="Conforme") cls+=" mid"; else if (stato==="Non conforme") cls+=" ko";
+    el.className=cls; el.textContent=stato;
+  }
+
+  // ---------- Pagina 1 ----------
+  function initPagina1(){
+    // carica norme + località TXT + eventuale override cfg
+    Promise.all([
+      fetch("./assets/data/norme.json",{cache:"no-store"}).then(function(r){if(!r.ok) throw new Error("norme.json"); return r.json();}),
+      fetch("public/documenti/C-S-A-maggio-2025.txt",{cache:"no-store"}).then(function(r){if(!r.ok) throw new Error("C-S-A-maggio-2025.txt"); return r.text();})
+    ])
+    .then(function(res){
+      norme = res[0];
+      localitaDB = parseLocalitaTxt(res[1]);
+
+      var cfg = getParam("cfg"); // override norme via impostazioni
+      var cfgObj = cfg ? decodeState(cfg) : null;
+      if (cfgObj && cfgObj.norme) deepMerge(norme, cfgObj.norme);
+
+      var enc = getParam("s");   // stato preventivo in URL
+      var incoming = enc ? decodeState(enc) : null;
+      if (incoming) deepMerge(state, incoming);
+
+      // header
+      byId("title").textContent = repoName();
+      byId("revDate").textContent = new Date().toLocaleDateString("it-IT");
+      byId("revVer").textContent = APP_VERSION;
+
+      // tema
+      var root = document.documentElement;
+      root.setAttribute("data-theme","light");
+      byId("themeBtn").addEventListener("click", function(){
+        var isLight = root.getAttribute("data-theme")==="light";
+        root.setAttribute("data-theme", isLight?"dark":"light");
+        byId("themeBtn").textContent = isLight ? "☀️" : "🌙";
+      });
+
+      // stampa
+      byId("printBtn").addEventListener("click", function(){ window.print(); });
+
+      // località
+      var selLoc = byId("loc");
+      selLoc.innerHTML = '<option value="">— Seleziona località —</option>' +
+        localitaDB.map(function(L){ return '<option value="'+L.id+'">'+L.nome+'</option>'; }).join("");
+      if (state.anagrafica.localitaId) selLoc.value = state.anagrafica.localitaId;
+
+      function updateLocBadge(){
+        var id = selLoc.value;
+        var L = localitaDB.find(function(x){return x.id===id;});
+        var badge = byId("locBadge");
+        if (!L){ badge.textContent="—"; badge.className="badge"; state.anagrafica.localita=""; return; }
+        state.anagrafica.localitaId = id;
+        state.anagrafica.localita = L.nome;
+        badge.textContent = "Neve "+(L.neve_kN_m2?L.neve_kN_m2.toFixed(2):"—")+" kN/m² · Vento "+(L.vento_m_s||"—")+" m/s"+(L.zonaNeve||L.zonaVento?(" (ZN "+(L.zonaNeve||"—")+" / ZV "+(L.zonaVento||"—")+")"):"");
+        badge.className="badge mid";
+      }
+      selLoc.addEventListener("change", updateLocBadge);
+      updateLocBadge();
+
+      // anagrafica
+      byId("cli").value = state.anagrafica.cliente;
+      byId("rif").value = state.anagrafica.riferimento;
+      byId("dat").value = state.anagrafica.data;
+      byId("cli").addEventListener("input", function(e){ state.anagrafica.cliente=e.target.value; refresh(); });
+      byId("rif").addEventListener("input", function(e){ state.anagrafica.riferimento=e.target.value; });
+      byId("dat").addEventListener("input", function(e){ state.anagrafica.data=e.target.value; });
+
+      // capannone
+      byId("len").value = state.capannone.lunghezza;
+      byId("wid").value = state.capannone.larghezza;
+      byId("quo").value = state.capannone.quotaDecubito;
+      byId("prz").value = state.capannone.prezzoMq;
+      byId("not").value = state.capannone.note;
+
+      ["len","wid","quo","prz"].forEach(function(id){
+        byId(id).addEventListener("input", function(e){
+          var v=num(e.target.value);
+          if(id==="len") state.capannone.lunghezza=v;
+          if(id==="wid") state.capannone.larghezza=v;
+          if(id==="quo") state.capannone.quotaDecubito=v;
+          if(id==="prz") state.capannone.prezzoMq=v;
+          refresh();
+        });
+      });
+      byId("not").addEventListener("input", function(e){ state.capannone.note=e.target.value; });
+
+      // popolazioni (layout “storico” + Livello)
+      var specie=["bovineAdulte","toriRimonta","bufaleParto","manzeBovine","bufaleAdulte","manzeBufaline"];
+      specie.forEach(function(k){
+        byId("n-"+k).value = state.popolazioni[k].n;
+        byId("s-"+k).innerHTML = '<option value="lettiera">lettiera</option><option value="libera">libera</option>';
+        byId("s-"+k).value = state.popolazioni[k].stab;
+        byId("l-"+k).innerHTML = '<option>Adeguato</option><option>Modesto</option><option>Ottimo</option>';
+        byId("l-"+k).value = state.popolazioni[k].livello;
+        byId("n-"+k).addEventListener("input", function(e){ state.popolazioni[k].n=num(e.target.value); refresh(); });
+        byId("s-"+k).addEventListener("change", function(e){ state.popolazioni[k].stab=e.target.value; });
+        byId("l-"+k).addEventListener("change", function(e){ state.popolazioni[k].livello=e.target.value; });
+      });
+      byId("ing-gr").value   = state.popolazioni.ingrasso.gruppi;
+      byId("ing-cpg").value  = state.popolazioni.ingrasso.capiPerGruppo;
+      byId("ing-peso").value = state.popolazioni.ingrasso.peso;
+      byId("ing-liv").value  = state.popolazioni.ingrasso.livello;
+      byId("ing-gr").addEventListener("input",function(e){ state.popolazioni.ingrasso.gruppi=num(e.target.value); refresh(); });
+      byId("ing-cpg").addEventListener("input",function(e){ state.popolazioni.ingrasso.capiPerGruppo=num(e.target.value); refresh(); });
+      byId("ing-peso").addEventListener("input",function(e){ state.popolazioni.ingrasso.peso=num(e.target.value); refresh(); });
+      byId("ing-liv").addEventListener("change",function(e){ state.popolazioni.ingrasso.livello=e.target.value; });
+
+      // unitari mostrati testualmente (dinamici dal dataset)
+      var mapVU = {
+        bovineAdulte:"vu-bovineAdulte",
+        manzeBovine:"vu-manzeBovine",
+        toriRimonta:"vu-toriRimonta",
+        bufaleAdulte:"vu-bufaleAdulte",
+        bufaleParto:"vu-bufaleParto",
+        manzeBufaline:"vu-manzeBufaline"
+      };
+      Object.keys(mapVU).forEach(function(k){
+        var el = byId(mapVU[k]); if (el) el.textContent = (norme.unitari_mq[k]||0).toFixed(2);
+      });
+
+      // check superficie (mostra %)
+      byId("checkBtn").addEventListener("click", function(){
+        var cf = conformita();
+        var btn = byId("checkBtn");
+        btn.textContent = "Check superficie: "+cf.pct+"% — "+cf.stato;
+      });
+
+      // prosegui
+      var next = byId("btn-next");
+      next.addEventListener("click", function(){
+        var href = "impianti.html?s="+encodeURIComponent(encodeState(state));
+        var cfg = getParam("cfg"); if (cfg) href += "&cfg="+encodeURIComponent(cfg);
+        location.href = href;
+      });
+
+      function refresh(){
+        byId("areaLorda").textContent = fmt1(areaLorda());
+        byId("areaDecubito").textContent = fmt1(areaDecubitoReale());
+        byId("areaNormativa").textContent = fmt1(areaNormativaRichiesta());
+        byId("costoStruttura").textContent = costoStruttura().toLocaleString("it-IT",{style:"currency",currency:"EUR"});
+
+        var cf = conformita();
+        setBadge(byId("badge"), cf.stato);
+        byId("badgePct").textContent = cf.pct+"%";
+
+        var ok = state.anagrafica.cliente.trim().length>0 && num(state.capannone.lunghezza)>0 && num(state.capannone.larghezza)>0;
+        next.disabled = !ok;
+      }
+      refresh();
+
+      // footer firma
+      byId("titleFooter").textContent = repoName();
+    })
+    .catch(function(err){ alert("Errore inizializzazione: "+err.message); });
+  }
+
+  global.PreventivoApp = { initPagina1:initPagina1 };
 })(window);
