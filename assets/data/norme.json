@@ -9,10 +9,13 @@
   },
   "ingrasso": {
     "mq_per_capo": [
-      { "maxPesoKg": 325, "mq": 3.25, "label": "min" },
-      { "maxPesoKg": 425, "mq": 4.25, "label": "adeg" },
-      { "maxPesoKg": 999999, "mq": 5.25, "label": "opt" }
+      { "maxPesoKg": 400, "mq": 3.25, "label": "min" },
+      { "maxPesoKg": 550, "mq": 4.25, "label": "adeg" },
+      { "maxPesoKg": 700, "mq": 5.25, "label": "opt" }
     ]
   },
-  "stabulazioni": ["lettiera", "libera"]
+  "meteo": {
+    "neve_eur_per_kgm2": 0,
+    "vento_eur_per_ms": 0
+  }
 }
