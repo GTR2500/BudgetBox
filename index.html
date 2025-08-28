@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  <title>Pagina 1 — Anagrafica</title>
+  <title>Pagina 1 — Anagrafica & Struttura</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="./assets/css/app.css" rel="stylesheet">
 </head>
@@ -27,26 +27,21 @@
     <section class="card">
       <div class="toolbar" style="justify-content:space-between">
         <h2 style="color:var(--brand)">Anagrafica</h2>
-        <!-- Badge meteo in alto a destra della sezione -->
         <span id="badge-meteo" class="badge meta">—</span>
       </div>
-
       <div class="grid-4">
         <label class="fld">
           <span>Cliente</span>
           <input id="cli" placeholder="Ragione sociale">
         </label>
-
         <label class="fld">
           <span>Località</span>
           <select id="fld-localita"></select>
         </label>
-
         <label class="fld">
           <span>Riferimento</span>
           <input id="rif" placeholder="Es. Rif. interno">
         </label>
-
         <label class="fld">
           <span>Data</span>
           <input id="dat" type="date">
@@ -56,7 +51,7 @@
 
     <!-- STRUTTURA -->
     <section class="card" style="margin-top:12px">
-      <div class="toolbar" style="justify-content:space-between">
+      <div class="toolbar" style="justify-content:space-between;align-items:flex-start">
         <h2 style="color:var(--brand)">Struttura</h2>
         <div class="toolbar" style="gap:10px">
           <span class="small">Stato superficie:</span>
@@ -66,17 +61,108 @@
         </div>
       </div>
 
+      <!-- Tipo, forma, prezzi -->
       <div class="grid-4" style="margin-top:8px">
-        <label>Lunghezza (m) <input id="len" type="number" step="1" min="0"></label>
-        <label>Larghezza (m) <input id="wid" type="number" step="1" min="0"></label>
-        <label>Quota area di decubito (%) <input id="quo" type="number" step="1" min="0" max="100"></label>
-        <label>Prezzo struttura (€/m²) <input id="prz" type="number" step="1" min="0"></label>
+        <label>Tipo di struttura
+          <select id="tipoStruttura"></select>
+        </label>
+        <label>Forma copertura
+          <select id="formaCopertura">
+            <option value="bifalda">bifalda</option>
+            <option value="monofalda">monofalda</option>
+            <option value="piano">piano</option>
+          </select>
+        </label>
+        <label>Prezzo struttura (€/m²)
+          <input id="prz" type="number" step="1" min="0">
+          <span class="small">Caricato dal tipo; modificabile a mano.</span>
+        </label>
+        <label>Kg acciaio (kg/m²)
+          <input id="kgBase" type="number" step="0.1" min="0">
+          <span class="small">Di riferimento per il calcolo €/kg variabile.</span>
+        </label>
+      </div>
+
+      <!-- Schizzo -->
+      <div class="card" style="margin:8px 0;display:flex;align-items:center;gap:12px">
+        <div id="sketch" aria-label="schizzo struttura"></div>
+        <div class="small">
+          Rappresentazione schematica della copertura selezionata (indicativa).
+        </div>
+      </div>
+
+      <!-- Campate, interasse, lunghezza calcolata, altezza trave -->
+      <div class="grid-4" style="margin-top:8px">
+        <label>N. campate
+          <input id="campN" type="number" step="1" min="0" value="0">
+        </label>
+        <label>Interasse campate (m)
+          <input id="campInt" type="number" step="0.01" min="0" value="0">
+          <span id="lenNote" class="small"></span>
+        </label>
+        <label>Lunghezza (m)
+          <input id="len" type="number" step="0.01" min="0">
+        </label>
+        <label>Altezza trave (m)
+          <input id="hTrave" type="number" step="0.01" min="0" value="0">
+        </label>
+      </div>
+
+      <!-- Larghezza e sporti -->
+      <div class="grid-4" style="margin-top:8px">
+        <label>Larghezza (m)
+          <input id="wid" type="number" step="0.01" min="0">
+        </label>
+        <label>Sporto testata SX (m)
+          <input id="spTSx" type="number" step="0.01" min="0" value="0">
+        </label>
+        <label>Sporto testata DX (m)
+          <input id="spTDx" type="number" step="0.01" min="0" value="0">
+        </label>
+        <label></label>
+      </div>
+      <div class="grid-4" style="margin-top:8px">
+        <label>Sporto gronda SX (m)
+          <input id="spGSx" type="number" step="0.01" min="0" value="0">
+        </label>
+        <label>Sporto gronda DX (m)
+          <input id="spGDx" type="number" step="0.01" min="0" value="0">
+        </label>
+
+        <!-- Pendenze falde dynamic -->
+        <div id="slopeBoxA" class="fld">
+          <span>Pendenza falda A (%)</span>
+          <input id="slopeA" type="number" step="0.1" min="0" value="0">
+        </div>
+        <div id="slopeBoxB" class="fld">
+          <span>Pendenza falda B (%)</span>
+          <input id="slopeB" type="number" step="0.1" min="0" value="0">
+          <span class="small">Ripartizione larghezza: A <input id="splitA" type="number" min="0" max="100" value="50" style="width:80px;display:inline"> % — B <span id="splitB">50</span> %</span>
+        </div>
+      </div>
+
+      <!-- Decubito -->
+      <div class="grid-4" style="margin-top:8px">
+        <label>Quota area di decubito (%)
+          <input id="quo" type="number" step="1" min="0" max="100">
+          <span class="small">Percentuale dell’<b>area lorda interna</b> destinata alle aree di riposo/stallo (lettiera, box, cuccette).<br>
+          <b>Superficie di decubito</b> = Area lorda interna × Quota / 100.</span>
+        </label>
+        <div></div><div></div><div></div>
+      </div>
+
+      <!-- Riepiloghi aree e costi -->
+      <div class="grid-4" style="margin-top:12px">
+        <div class="card"><div class="small">Area lorda interna</div><div class="value"><span id="areaLorda">0.0</span> m²</div></div>
+        <div class="card"><div class="small">Copertura in pianta (sporti inclusi)</div><div class="value"><span id="areaCoperta">0.0</span> m²</div></div>
+        <div class="card"><div class="small">Copertura in falda</div><div class="value"><span id="areaFalda">0.0</span> m²</div></div>
+        <div class="card"><div class="small">Area normativa richiesta</div><div class="value"><span id="areaNormativa">0.0</span> m²</div></div>
       </div>
 
       <div class="grid-4" style="margin-top:12px">
-        <div class="card"><div class="small">Area lorda</div><div class="value"><span id="areaLorda">0.0</span> m²</div></div>
-        <div class="card"><div class="small">Area decubito (reale)</div><div class="value"><span id="areaDecubito">0.0</span> m²</div></div>
-        <div class="card"><div class="small">Area normativa richiesta</div><div class="value"><span id="areaNormativa">0.0</span> m²</div></div>
+        <div class="card"><div class="small">Costo €/m² (tipo)</div><div class="value"><span id="costoMq">—</span></div></div>
+        <div class="card"><div class="small">Costo acciaio (€/kg variabile)</div><div class="value"><span id="costoKg">—</span></div></div>
+        <div class="card"><div class="small">Extra meteo (neve + vento)</div><div class="value"><span id="extraMeteo">—</span></div></div>
         <div class="card"><div class="small">Costo struttura</div><div class="value"><span id="costoStruttura">—</span></div></div>
       </div>
 
@@ -85,10 +171,9 @@
       </label>
     </section>
 
-    <!-- POPOLAZIONI & STABULAZIONI -->
+    <!-- POPOLAZIONI & STABULAZIONI (invariata) -->
     <section class="card" style="margin-top:12px">
       <h2 style="color:var(--brand)">Popolazioni &amp; stabulazioni</h2>
-
       <div class="grid-2" style="margin-top:8px">
         <div class="specie card">
           <div class="toolbar" style="justify-content:space-between"><h3>Bovine adulte</h3></div>
