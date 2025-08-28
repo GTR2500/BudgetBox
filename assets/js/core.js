@@ -1,26 +1,28 @@
-/* BudgetBox – Pagina 1: Anagrafica + Struttura evoluta
-   - Extra meteo raffinato (neve con mu(slope), vento con sovrapprezzo %)
-   - Copertura in pianta e in falda
-   - €/kg variabile in base all’area
+/* BudgetBox – Pagina 1
+   Pendenze da TXT + altezza colmo da larghezza/forma + sporti unificati + extra neve/vento %.
+   Rev: v0.1.4
 */
 (function (global) {
-  var APP_VERSION = "v0.1.2";
+  var APP_VERSION = "v0.1.4";
 
   // ---------- STATO ----------
   var state = {
     anagrafica: { cliente:"", localitaId:"", localita:"", riferimento:"", data: new Date().toISOString().slice(0,10) },
     cap: {
+      // unico tipo: acciaio zincato
       tipoId:"acciaio_zincato",
-      forma:"bifalda",
+      forma:"bifalda",        // id canonico: piano | monofalda | bifalda | dente_sega | cattedrale
       prezzoMq:180,
       kgBase:34,
+      // geometria base
       lunghezza:60,
       larghezza:25,
       campN:0,
       campInt:0,
-      hTrave:0,
-      spTSx:0, spTDx:0, spGSx:0, spGDx:0,
-      slopeA:0, slopeB:0, splitA:50, // % larghezza A (B = 100-splitA)
+      hTrave:0,               // quota gronda (punto più basso)
+      // sporti unificati (fronte/retro e sx/dx)
+      spTest:0,
+      spGr:0,
       quotaDecubito:70,
       note:"Struttura metallica zincata, copertura sandwich 40 mm"
     },
@@ -38,14 +40,14 @@
 
   var norme = null;
   var localitaDB = [];
+  var FORME = []; // da TXT
 
   // ---------- UTILS ----------
   function num(v){ return Number(v||0); }
   function fmt1(v){ return (Math.round(v*10)/10).toFixed(1); }
   function fmt2(v){ return (Math.round(v*100)/100).toFixed(2); }
   function byId(id){ return document.getElementById(id); }
-  function repoName(){ var seg=location.pathname.split("/").filter(Boolean); return seg.length>=2?seg[1]:(seg[0]||"Preventivi"); }
-  function getParam(name){ var m=new RegExp("[?&]"+name+"=([^&]*)").exec(location.search); return m?decodeURIComponent(m[1]):null; }
+  function repoName(){ var seg=location.pathname.split("/").filter(Boolean); return seg.length>=2?seg[1]:(seg[0]||"BudgetBox"); }
 
   function fetchFirst(paths, asText){
     var getter = asText ? function(r){ return r.text(); } : function(r){ return r.json(); };
@@ -108,30 +110,92 @@
     return out.sort(function(a,b){ return a.nome.localeCompare(b.nome,"it"); });
   }
 
+  // ---------- PARSER FORME COPERTURA (TXT) ----------
+  function canonicalId(label){
+    var s = (label||"").toLowerCase();
+    if (s.indexOf("piano")>=0) return "piano";
+    if (s.indexOf("monofalda")>=0 || s.indexOf("shed")>=0) return "monofalda";
+    if (s.indexOf("bifalda")>=0 || s.indexOf("capanna")>=0) return "bifalda";
+    if (s.indexOf("dente")>=0 || s.indexOf("sawtooth")>=0) return "dente_sega";
+    if (s.indexOf("cattedrale")>=0 || s.indexOf("capriate")>=0) return "cattedrale";
+    return s.replace(/\s+/g,"_").replace(/[^\w]/g,"");
+  }
+  function parseFormeTxt(txt){
+    var lines = txt.split(/\r?\n/).map(function(l){return l.trim();})
+      .filter(Boolean).filter(function(l){return !/^#|^\/\//.test(l);});
+    if (!lines.length) return [];
+    var delim = ["\t",";","|",","].find(function(d){return lines[0].indexOf(d)!==-1;}) || "\t";
+    var head = lines[0].split(delim).map(function(s){return s.trim().toLowerCase();});
+    var iType = head.indexOf("roof_type");
+    var iMin  = head.indexOf("min_slope");
+    var iMax  = head.indexOf("max_slope");
+    var iDesc = head.indexOf("descrizione");
+    var out=[];
+    for (var i=1;i<lines.length;i++){
+      var c = lines[i].split(delim);
+      var label = (c[iType]||"").trim();
+      if (!label) continue;
+      out.push({
+        id: canonicalId(label),
+        label: label,
+        minSlopePct: Number(c[iMin]||0),
+        maxSlopePct: Number(c[iMax]||0),
+        descr: (c[iDesc]||"").trim()
+      });
+    }
+    return out;
+  }
+
   // ---------- GEOMETRIA ----------
   function lengthFromCampate(){
     var n=num(state.cap.campN), p=num(state.cap.campInt);
     if(n>0 && p>0) return n*p; return num(state.cap.lunghezza);
   }
-  function areaLorda(){ return num(state.cap.larghezza) * num(state.cap.lunghezza); }
-  function areaCoperta(){
-    var Lcov = num(state.cap.lunghezza) + num(state.cap.spTSx) + num(state.cap.spTDx);
-    var Wcov = num(state.cap.larghezza) + num(state.cap.spGSx) + num(state.cap.spGDx);
-    return Lcov * Wcov;
+  function covDims(){
+    // dimensioni coperte considerate per la superficie di copertura (sporti inclusi)
+    var Lcov = num(state.cap.lunghezza) + 2*num(state.cap.spTest);
+    var Wcov = num(state.cap.larghezza) + 2*num(state.cap.spGr);
+    return {Lcov:Lcov, Wcov:Wcov};
   }
-  function secFromSlopePct(pct){ var t = pct/100; return Math.sqrt(1 + t*t); } // 1/cos
-  function areaFalda(){
-    var Lcov = num(state.cap.lunghezza) + num(state.cap.spTSx) + num(state.cap.spTDx);
-    var Wcov = num(state.cap.larghezza) + num(state.cap.spGSx) + num(state.cap.spGDx);
-    var forma = state.cap.forma;
-    if(forma==="piano") return Lcov * Wcov;
-    if(forma==="monofalda"){
-      return Lcov * ( Wcov * secFromSlopePct(num(state.cap.slopeA)) );
+  function areaLorda(){ return num(state.cap.larghezza) * num(state.cap.lunghezza); }
+  function areaCoperta(){ var d=covDims(); return d.Lcov * d.Wcov; }
+
+  // pendenza % stimata dal TXT (min–max) con lieve taratura meteo (neve↑/vento↓ entro il range)
+  function estimatedSlopePct(){
+    var f = FORME.find(function(x){return x.id===state.cap.forma;});
+    if (!f) f = {minSlopePct:0, maxSlopePct:0};
+    var min = num(f.minSlopePct), max = num(f.maxSlopePct);
+    if (max < min) max = min;
+    var base = (min + max) / 2;
+
+    // taratura leggera: neve spinge verso max, vento verso min (entro ±25% del range)
+    var cfg = norme.neve_vento_percent && norme.neve_vento_percent.scales || {};
+    var neveN  = cfg.neve  && cfg.neve.max  ? Math.max(0, Math.min(1, num(state.meteo.neve_kgm2)/num(cfg.neve.max)))   : 0;
+    var ventoN = cfg.vento && cfg.vento.max ? Math.max(0, Math.min(1, num(state.meteo.vento_ms)/num(cfg.vento.max))) : 0;
+    var adj = (neveN - ventoN) * (max - min) * 0.25;
+    var out = Math.max(min, Math.min(max, base + adj));
+    return out;
+  }
+
+  // Altezza colmo (hTrave = quota minima alla gronda)
+  function altezzaColmo(){
+    var d = covDims(), W = d.Wcov;
+    var slope = estimatedSlopePct(); // %
+    var rise;
+    if (state.cap.forma === "monofalda" || state.cap.forma === "piano"){
+      rise = W * slope / 100; // pendenza su tutta la larghezza
+    } else {
+      rise = (W/2) * slope / 100; // bifalda, cattedrale, dente_sega → metà luce
     }
-    // bifalda
-    var splitA = Math.max(0, Math.min(100, num(state.cap.splitA))) / 100;
-    var WA = Wcov * splitA, WB = Wcov * (1-splitA);
-    return Lcov * ( WA * secFromSlopePct(num(state.cap.slopeA)) + WB * secFromSlopePct(num(state.cap.slopeB)) );
+    return num(state.cap.hTrave) + rise;
+  }
+
+  // Superficie di copertura in falda (somma faldoni) – stessa pendenza su entrambe
+  function areaFalda(){
+    var d = covDims();
+    var slope = estimatedSlopePct();
+    var sec = Math.sqrt(1 + Math.pow(slope/100, 2)); // 1/cos(θ)
+    return d.Lcov * d.Wcov * sec;
   }
 
   // ---------- NORMATIVA POPOLAZIONI ----------
@@ -154,69 +218,39 @@
   function eurPerKgByArea(A){
     var scale = (norme.euro_per_kg_scale||[]).slice().sort(function(a,b){ return a.minArea_m2-b.minArea_m2; });
     var v = 0;
-    for (var i=0;i<scale.length;i++){
-      if (A >= num(scale[i].minArea_m2)) v = num(scale[i].eurPerKg);
-    }
+    for (var i=0;i<scale.length;i++){ if (A >= num(scale[i].minArea_m2)) v = num(scale[i].eurPerKg); }
     return v;
   }
-  function ventoSovrapprezzoPct(){
-    var b = norme.vento && norme.vento.buckets ? norme.vento.buckets : {altezza_m:[3,6], passo_m:[4.5]};
-    var H = num(state.cap.hTrave);
-    var P = num(state.cap.campInt);
-    var hKey = H < b.altezza_m[0] ? "H1" : (H < b.altezza_m[1] ? "H2" : "H3");
-    var pKey = P <= b.passo_m[0] ? "P1" : "P2";
-    var key = (state.cap.forma||"bifalda") + "_" + hKey + "_" + pKey;
-    var tab = (norme.vento && norme.vento.sovrapprezzo) || {};
-    return num(tab[key] != null ? tab[key] : tab["default"] || 0);
-  }
-  function snowMuFromSlope(pct){
-    var r = num(norme.meteo && norme.meteo.snow_mu_reduction_per_slope_pct);
-    var muMax = num(norme.meteo && norme.meteo.snow_mu_max); if(!isFinite(muMax)||muMax<=0) muMax=1;
-    var muMin = num(norme.meteo && norme.meteo.snow_mu_min); if(!isFinite(muMin)||muMin<0) muMin=0;
-    var mu = muMax - r * Math.max(0,pct);
-    return Math.max(muMin, Math.min(muMax, mu));
-  }
-
-  function extraMeteo(Acov, Afalda){
-    // Neve: A_falda × carico_neve × €/kg × mu(slope)
-    var neveKg = num(state.meteo.neve_kgm2);
-    var kN = num(norme.meteo && norme.meteo.neve_eur_per_kgm2);
-    var mu = 1;
-    if(state.cap.forma==="monofalda"){
-      mu = snowMuFromSlope(num(state.cap.slopeA));
-    }else if(state.cap.forma==="bifalda"){
-      var a = num(state.cap.slopeA), b = num(state.cap.slopeB);
-      var split = Math.max(0, Math.min(100, num(state.cap.splitA))) / 100;
-      mu = split * snowMuFromSlope(a) + (1-split) * snowMuFromSlope(b);
+  // percentuale neve+vento (3–15%) su base + acciaio
+  function neveVentoPercent(){
+    var cfg = norme.neve_vento_percent || {};
+    var w = cfg.weights || {};
+    var sc = cfg.scales || {};
+    var minP = num(cfg.min_pct||3), maxP = num(cfg.max_pct||15);
+    var neveN  = sc.neve  && sc.neve.max  ? Math.max(0, Math.min(1, num(state.meteo.neve_kgm2)/num(sc.neve.max)))   : 0;
+    var ventoN = sc.vento && sc.vento.max ? Math.max(0, Math.min(1, num(state.meteo.vento_ms)/num(sc.vento.max))) : 0;
+    var altN   = sc.altitudine && sc.altitudine.max ? Math.max(0, Math.min(1, num(state.meteo.alt_m)/num(sc.altitudine.max))) : 0;
+    var sisN   = 0;
+    if (sc.sismica && sc.sismica.map){
+      var z = (state.meteo.zonaSismica||"").toString().trim();
+      sisN = num(sc.sismica.map[z] != null ? sc.sismica.map[z] : sc.sismica.map[""]);
+      sisN = Math.max(0, Math.min(1, sisN));
     }
-    var extraNeve = Afalda * neveKg * kN * mu;
-
-    // Vento: A_coperta × vento_ms × €/m/s × (1 + sovrapprezzo%)
-    var vento = num(state.meteo.vento_ms);
-    var kV = num(norme.meteo && norme.meteo.vento_eur_per_ms);
-    var sPct = ventoSovrapprezzoPct(); // %
-    var extraVento = Acov * vento * kV * (1 + sPct/100);
-
-    return { neve: extraNeve, vento: extraVento, totale: extraNeve + extraVento };
+    var formaBonus = 0;
+    if (cfg.forma_bonus){ var fb = cfg.forma_bonus[state.cap.forma]; if (fb != null) formaBonus = num(fb); }
+    var score = neveN*(w.neve||0) + ventoN*(w.vento||0) + altN*(w.altitudine||0) + sisN*(w.sismica||0) + formaBonus*(w.forma_bonus||0);
+    score = Math.max(0, Math.min(1, score));
+    return minP + (maxP - minP) * score;
   }
-
   function costoStruttura(){
-    var Acov = areaCoperta();
-    var Afalda = areaFalda();
-
-    // Base €/m² (tipo)
-    var base = Acov * num(state.cap.prezzoMq);
-
-    // Acciaio €/kg variabile
-    var eurKg = eurPerKgByArea(Acov);
-    var costKg = Acov * num(state.cap.kgBase) * eurKg;
-
-    // Extra meteo
-    var ex = extraMeteo(Acov, Afalda);
-
-    return { base: base, kg: costKg, extra: ex, totale: base + costKg + ex.totale };
+    var AC = areaCoperta();
+    var base = AC * num(state.cap.prezzoMq);
+    var eurKg = eurPerKgByArea(AC);
+    var costKg = AC * num(state.cap.kgBase) * eurKg;
+    var pct = neveVentoPercent();
+    var extra = (base + costKg) * pct / 100;
+    return { base: base, kg: costKg, extraPct: pct, extraEuro: extra, totale: base + costKg + extra };
   }
-
   function conformita(){
     var req=areaNormativaRichiesta(), real=areaLorda()*num(state.cap.quotaDecubito)/100;
     if(req===0 && real===0) return {stato:"—", pct:100};
@@ -225,17 +259,23 @@
     return {stato:stato, pct: Math.round(ratio*100)};
   }
 
-  // ---------- SKETCH ----------
+  // ---------- SCHIZZI (SVG compatti) ----------
   function sketch(forma){
-    var color = "currentColor";
+    var c = "currentColor";
     if(forma==="piano"){
-      return '<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="25" width="100" height="8" stroke="'+color+'" stroke-width="2" fill="none"/></svg>';
+      return '<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="45" width="100" height="6" stroke="'+c+'" stroke-width="2" fill="none"/></svg>';
     }
     if(forma==="monofalda"){
-      return '<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 40 L100 25 L100 33 L10 48 Z" stroke="'+color+'" stroke-width="2" fill="none"/></svg>';
+      return '<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 48 L100 30 L100 36 L10 54 Z" stroke="'+c+'" stroke-width="2" fill="none"/></svg>';
+    }
+    if(forma==="dente_sega"){
+      return '<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 L35 35 L60 50 L85 35 L110 50" stroke="'+c+'" stroke-width="2" fill="none"/></svg>';
+    }
+    if(forma==="cattedrale"){
+      return '<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 L60 28 L110 50" stroke="'+c+'" stroke-width="2" fill="none"/><path d="M35 50 L60 39 L85 50" stroke="'+c+'" stroke-width="2" fill="none"/></svg>';
     }
     // bifalda
-    return '<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 40 L60 25 L110 40 L110 48 L10 48 Z" stroke="'+color+'" stroke-width="2" fill="none"/></svg>';
+    return '<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 L60 28 L110 50" stroke="'+c+'" stroke-width="2" fill="none"/></svg>';
   }
 
   // ---------- UI ----------
@@ -256,7 +296,7 @@
   }
 
   function refresh(){
-    // sincronia lunghezza da campate (nota informativa)
+    // lunghezza da campate se presente
     var Lcalc = lengthFromCampate();
     var lenNote = byId("lenNote");
     if(lenNote){ lenNote.textContent = (num(state.cap.campN)>0 && num(state.cap.campInt)>0) ? ("L calcolata: "+fmt2(Lcalc)+" m") : ""; }
@@ -285,38 +325,54 @@
 
     var elCMq = byId("costoMq");  if(elCMq) elCMq.textContent = CT.base.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
     var elCKg = byId("costoKg");  if(elCKg) elCKg.textContent = CT.kg.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
-    var elEX  = byId("extraMeteo"); if(elEX) elEX.textContent = CT.extra.totale.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
+    var elEX  = byId("extraMeteo"); if(elEX) elEX.textContent = fmt2(CT.extraPct) + "% — " + CT.extraEuro.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
     var elCT  = byId("costoStruttura"); if(elCT) elCT.textContent = CT.totale.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
+
+    var pen = byId("pendenzaStimata"); if (pen) pen.textContent = fmt2(estimatedSlopePct());
+    var hCol = byId("hColmo"); if (hCol) hCol.textContent = fmt2(altezzaColmo());
 
     var ok = (state.anagrafica.cliente||"").trim().length>0 && num(state.cap.lunghezza)>0 && num(state.cap.larghezza)>0;
     var next = byId("btn-next"); if (next) next.disabled = !ok;
   }
 
-  function showSlopeInputs(){
-    var f = state.cap.forma;
-    var boxA = byId("slopeBoxA"), boxB = byId("slopeBoxB");
-    if(!boxA || !boxB) return;
-    if(f==="piano"){
-      boxA.style.display="none";
-      boxB.style.display="none";
-    } else if(f==="monofalda"){
-      boxA.style.display="";
-      boxB.style.display="none";
-    } else {
-      boxA.style.display="";
-      boxB.style.display="";
+  function loadFormeSelect(){
+    var sel = byId("formaCopertura");
+    var descr = byId("formaDescr");
+    if (!sel) return;
+    var list = FORME.length ? FORME : (norme.forme_copertura||[]);
+    if (!list.length){ sel.innerHTML='<option value="bifalda">bifalda</option>'; }
+    else sel.innerHTML = list.map(function(f){ return '<option value="'+f.id+'">'+(f.label||f.id)+'</option>'; }).join("");
+
+    // set value corrente
+    if (!list.find(function(x){return x.id===state.cap.forma;})) state.cap.forma = list[0].id;
+    sel.value = state.cap.forma;
+
+    if (descr){
+      var cur = list.find(function(x){return x.id===state.cap.forma;});
+      descr.textContent = cur && cur.descr ? cur.descr : "";
     }
+    var sk  = byId("sketch"); if(sk){ sk.innerHTML = sketch(state.cap.forma); }
+
+    sel.addEventListener("change", function(){
+      state.cap.forma = sel.value;
+      var cur = list.find(function(x){return x.id===state.cap.forma;});
+      if (descr) descr.textContent = cur && cur.descr ? cur.descr : "";
+      var sk  = byId("sketch"); if(sk){ sk.innerHTML = sketch(state.cap.forma); }
+      refresh();
+    });
   }
 
   // ---------- INIT ----------
   function initPagina1(){
     Promise.all([
       fetchFirst(["./assets/data/norme.json","assets/data/norme.json","/assets/data/norme.json"], false),
-      fetchFirst(["public/documenti/C-S-A-maggio-2025.txt","./public/documenti/C-S-A-maggio-2025.txt","/public/documenti/C-S-A-maggio-2025.txt"], true)
+      fetchFirst(["public/documenti/C-S-A-maggio-2025.txt","./public/documenti/C-S-A-maggio-2025.txt","/public/documenti/C-S-A-maggio-2025.txt"], true),
+      fetchFirst(["public/documenti/forme-coperture.txt","./public/documenti/forme-coperture.txt","/public/documenti/forme-coperture.txt"], true)
     ])
     .then(function(res){
       norme = res[0];
       localitaDB = parseLocalitaTxt(res[1]);
+      FORME = parseFormeTxt(res[2]);
 
       // header
       var titleEl = byId("title"); if (titleEl) titleEl.textContent = repoName();
@@ -363,48 +419,34 @@
       }
       updateLocBadge();
 
-      // Strutture
+      // Selettore forma da TXT
+      loadFormeSelect();
+
+      // Tipo struttura (unico)
       var tipoSel = byId("tipoStruttura");
       if (tipoSel){
-        tipoSel.innerHTML = (norme.strutture||[]).map(function(s){
-          return '<option value="'+s.id+'">'+s.label+'</option>';
-        }).join("");
+        tipoSel.innerHTML = '<option value="acciaio_zincato">Struttura metallica zincata</option>';
         tipoSel.value = state.cap.tipoId;
         tipoSel.addEventListener("change", function(){
           state.cap.tipoId = tipoSel.value;
-          var S = (norme.strutture||[]).find(function(x){return x.id===state.cap.tipoId;});
-          if(S){
-            state.cap.forma = S.forma || state.cap.forma;
-            state.cap.prezzoMq = num(S.prezzoMq||0);
-            state.cap.kgBase   = num(S.kg_per_mq_base||0);
-            var fSel = byId("formaCopertura"); if(fSel){ fSel.value = state.cap.forma; }
-            var prz = byId("prz"); if(prz){ prz.value = state.cap.prezzoMq; }
-            var kgb = byId("kgBase"); if(kgb){ kgb.value = state.cap.kgBase; }
-            var sk  = byId("sketch"); if(sk){ sk.innerHTML = sketch(state.cap.forma); }
-            showSlopeInputs();
-            refresh();
-          }
-        });
-      }
-
-      // Forma copertura
-      var formaSel = byId("formaCopertura");
-      if (formaSel){
-        formaSel.value = state.cap.forma;
-        formaSel.addEventListener("change", function(){
-          state.cap.forma = formaSel.value;
-          var sk  = byId("sketch"); if(sk){ sk.innerHTML = sketch(state.cap.forma); }
-          showSlopeInputs();
+          // valori restano quelli di default da norme/strutture[0] se presenti
           refresh();
         });
-        var sk  = byId("sketch"); if(sk){ sk.innerHTML = sketch(state.cap.forma); }
       }
 
-      // Input prezzo/ kg base
+      // Carica eventuali default da norme.strutture[0]
+      var s0 = (norme.strutture||[])[0];
+      if (s0){
+        state.cap.prezzoMq = num(s0.prezzoMq||state.cap.prezzoMq);
+        state.cap.kgBase   = num(s0.kg_per_mq_base||state.cap.kgBase);
+        var prz = byId("prz"); if(prz){ prz.value = state.cap.prezzoMq; }
+        var kgb = byId("kgBase"); if(kgb){ kgb.value = state.cap.kgBase; }
+      }
+
+      // Inputs vari
       var prz = byId("prz"); if(prz){ prz.value=state.cap.prezzoMq; prz.addEventListener("input", function(e){ state.cap.prezzoMq=num(e.target.value); refresh(); }); }
       var kgB = byId("kgBase"); if(kgB){ kgB.value=state.cap.kgBase; kgB.addEventListener("input", function(e){ state.cap.kgBase=num(e.target.value); refresh(); }); }
 
-      // Campate/interasse/lunghezza/altezza
       ["campN","campInt","len","hTrave"].forEach(function(id){
         var el=byId(id); if(!el) return;
         el.addEventListener("input", function(e){
@@ -416,37 +458,14 @@
           refresh();
         });
       });
-
-      // Larghezze e sporti
-      ["wid","spTSx","spTDx","spGSx","spGDx"].forEach(function(id){
+      ["wid","spTest","spGr"].forEach(function(id){
         var el=byId(id); if(!el) return;
-        el.addEventListener("input", function(e){
-          state.cap[id] = num(e.target.value);
-          refresh();
-        });
+        el.addEventListener("input", function(e){ state.cap[id] = num(e.target.value); refresh(); });
       });
-
-      // Pendenze / split
-      ["slopeA","slopeB"].forEach(function(id){
-        var el=byId(id); if(!el) return;
-        el.addEventListener("input", function(e){ state.cap[id]=num(e.target.value); refresh(); });
-      });
-      var spA = byId("splitA"); if (spA){
-        spA.addEventListener("input", function(e){
-          var val=num(e.target.value); if(!isFinite(val)) val=50;
-          state.cap.splitA = Math.max(0, Math.min(100, val));
-          var spB=byId("splitB"); if(spB) spB.textContent = fmt1(100 - state.cap.splitA);
-          refresh();
-        });
-      }
-      var spB=byId("splitB"); if(spB) spB.textContent = fmt1(100 - state.cap.splitA);
-      showSlopeInputs();
-
-      // Quota decubito
       var quo = byId("quo"); if(quo){ quo.value=state.cap.quotaDecubito; quo.addEventListener("input", function(e){ state.cap.quotaDecubito=num(e.target.value); refresh(); }); }
       var not = byId("not"); if(not){ not.value=state.cap.note; not.addEventListener("input", function(e){ state.cap.note=e.target.value; }); }
 
-      // Popolazioni select/inputs (invariato)
+      // Popolazioni
       ["bovineAdulte","toriRimonta","bufaleParto","manzeBovine","bufaleAdulte","manzeBufaline"].forEach(function(k){
         var n = byId("n-"+k), s = byId("s-"+k), l = byId("l-"+k);
         if(n){ n.addEventListener("input", function(e){ state.popolazioni[k].n=num(e.target.value); refresh(); }); }
@@ -467,27 +486,38 @@
 
       // Valori unitari label
       var mapVU = { bovineAdulte:"vu-bovineAdulte", manzeBovine:"vu-manzeBovine", toriRimonta:"vu-toriRimonta",
-                    bufaleAdulte:"vu-bufaleAdulte", bufaleParto:"vu-bufaleParto", manzeBufaline:"vu-manzeBufaline" };
-      Object.keys(mapVU).forEach(function(k){ var el=byId(mapVU[k]); if(el) el.textContent=(norme.unitari_mq[k]||0).toFixed(2); });
+                    bufaleAdulte:"vu-bufaleAdulte", bufaleParto:"vu-bufaleParto", manzeBufaline:"vu-manzebufaline" };
+      Object.keys(norme.unitari_mq||{}).forEach(function(k){
+        var idLbl = (k==="manzeBufaline") ? "vu-manzebufaline" : ("vu-"+k);
+        var el=byId(idLbl); if(el) el.textContent=(norme.unitari_mq[k]||0).toFixed(2);
+      });
 
-      // Check superficie
+      // Pulsanti
       var checkBtn = byId("checkBtn");
       if (checkBtn) checkBtn.addEventListener("click", function(){
         var cf = conformita();
         checkBtn.textContent = "Check superficie: " + cf.pct + "% — " + cf.stato;
       });
-
-      // Prosegui
       var next = byId("btn-next");
       if (next) next.addEventListener("click", function(){
-        var enc = (function encodeState(o){ var json=JSON.stringify(o),b=new TextEncoder().encode(json),s=""; for(var i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s); })(state);
-        var href = "impianti.html?s="+encodeURIComponent(enc);
-        var cfg = getParam("cfg"); if (cfg) href += "&cfg="+encodeURIComponent(cfg);
-        location.href = href;
+        alert("La suddivisione in pagine 2/3/4 la attiviamo appena chiudiamo la 1 (impianti, accessori, riepilogo).");
       });
 
-      refresh();
+      // badge header footer
       var tf = byId("titleFooter"); if (tf) tf.textContent = repoName();
+
+      // aggiungo visualizzazione altezza colmo (se presente nello UI)
+      var sk = byId("sketch");
+      if (sk && !document.getElementById("colmoBox")){
+        var span = document.createElement("span");
+        span.id = "colmoBox";
+        span.className = "small";
+        span.style.marginLeft = "8px";
+        span.innerHTML = ' | <b>Altezza colmo</b>: <span id="hColmo">0.00</span> m';
+        sk.parentNode.appendChild(span);
+      }
+
+      refresh();
     })
     .catch(function(err){ alert("Errore inizializzazione: "+err.message); });
   }
