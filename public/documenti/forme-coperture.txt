@@ -1,0 +1,6 @@
+id	roof_type	min_slope	max_slope	descrizione
+1	Tetto piano	1	3	Superficie quasi perfettamente orizzontale, senza spioventi; progettata per drenaggio puntiforme.
+2	Monofalda (shed)	5	15	Falda unica inclinata da un lato all'altro, asimmetrica; ideale per tettoie protettive.
+3	Bifalda / a capanna	8	20	Due faldoni simmetrici che convergono verso un colmo centrale, formando una forma a "V" invertita.
+4	Dente di sega (sawtooth)	15	25	Alternanza ripetuta di faldoni ... (teeth) e verticale, creando un profilo a "Z" lungo la campata.
+5	Capriate a vista ("cattedrale")	8	20	Struttura portante in legno/acciaio, con faldoni inclinati simmetrici e travi decorativi visibili.
