@@ -9,11 +9,11 @@
 <body>
   <header>
     <div class="container toolbar" style="justify-content:space-between">
-      <div class="logo">
-        <img src="https://www.glcgrimaldelli.com/wp-content/uploads/2019/06/Logo-Sottopagine.jpg" alt="Grimaldelli">
-        <h1 id="title">Preventivi</h1>
+      <div class="logo" style="display:flex;align-items:center;gap:10px">
+        <img src="https://www.glcgrimaldelli.com/wp-content/uploads/2019/06/Logo-Sottopagine.jpg" alt="Grimaldelli" style="height:28px">
+        <h1 id="title" style="margin:0">Preventivi</h1>
       </div>
-      <div class="header-right">
+      <div class="header-right" style="display:flex;gap:10px;align-items:center">
         <div class="rev">Rev <span id="revDate"></span> • <span id="revVer"></span></div>
         <button id="printBtn" class="btn">Stampa / PDF</button>
         <a class="btn btn-ghost" href="./impostazioni.html" title="Impostazioni">Impostazioni</a>
@@ -53,7 +53,7 @@
     <section class="card" style="margin-top:12px">
       <div class="toolbar" style="justify-content:space-between;align-items:flex-start">
         <h2 style="color:var(--brand)">Struttura</h2>
-        <div class="toolbar" style="gap:10px">
+        <div class="toolbar" style="gap:10px;flex-wrap:wrap">
           <span class="small">Stato superficie:</span>
           <span id="badge" class="badge">—</span>
           <span class="small">(<span id="badgePct">0%</span>)</span>
@@ -67,11 +67,8 @@
           <select id="tipoStruttura"></select>
         </label>
         <label>Forma copertura
-          <select id="formaCopertura">
-            <option value="bifalda">bifalda</option>
-            <option value="monofalda">monofalda</option>
-            <option value="piano">piano</option>
-          </select>
+          <select id="formaCopertura"></select>
+          <span id="formaDescr" class="small"></span>
         </label>
         <label>Prezzo struttura (€/m²)
           <input id="prz" type="number" step="1" min="0">
@@ -79,19 +76,21 @@
         </label>
         <label>Kg acciaio (kg/m²)
           <input id="kgBase" type="number" step="0.1" min="0">
-          <span class="small">Di riferimento per il calcolo €/kg variabile.</span>
+          <span class="small">Riferimento per il calcolo €/kg variabile.</span>
         </label>
       </div>
 
-      <!-- Schizzo -->
-      <div class="card" style="margin:8px 0;display:flex;align-items:center;gap:12px">
+      <!-- Schizzo + pendenza + colmo -->
+      <div class="card" style="margin:8px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <div id="sketch" aria-label="schizzo struttura"></div>
         <div class="small">
           Rappresentazione schematica della copertura selezionata (indicativa).
+          &nbsp;•&nbsp;<b>Pendenza stimata:</b> <span id="pendenzaStimata">0.00</span>% 
+          &nbsp;•&nbsp;<b>Altezza colmo:</b> <span id="hColmo">0.00</span> m
         </div>
       </div>
 
-      <!-- Campate, interasse, lunghezza calcolata, altezza trave -->
+      <!-- Campate, interasse, lunghezza, altezza -->
       <div class="grid-4" style="margin-top:8px">
         <label>N. campate
           <input id="campN" type="number" step="1" min="0" value="0">
@@ -108,50 +107,33 @@
         </label>
       </div>
 
-      <!-- Larghezza e sporti -->
+      <!-- Larghezza e sporti unificati -->
       <div class="grid-4" style="margin-top:8px">
         <label>Larghezza (m)
           <input id="wid" type="number" step="0.01" min="0">
         </label>
-        <label>Sporto testata SX (m)
-          <input id="spTSx" type="number" step="0.01" min="0" value="0">
+        <label>Sporto testata (m) — fronte/retro
+          <input id="spTest" type="number" step="0.01" min="0" value="0">
         </label>
-        <label>Sporto testata DX (m)
-          <input id="spTDx" type="number" step="0.01" min="0" value="0">
+        <label>Sporto gronda (m) — sx/dx
+          <input id="spGr" type="number" step="0.01" min="0" value="0">
         </label>
         <label></label>
-      </div>
-      <div class="grid-4" style="margin-top:8px">
-        <label>Sporto gronda SX (m)
-          <input id="spGSx" type="number" step="0.01" min="0" value="0">
-        </label>
-        <label>Sporto gronda DX (m)
-          <input id="spGDx" type="number" step="0.01" min="0" value="0">
-        </label>
-
-        <!-- Pendenze falde dynamic -->
-        <div id="slopeBoxA" class="fld">
-          <span>Pendenza falda A (%)</span>
-          <input id="slopeA" type="number" step="0.1" min="0" value="0">
-        </div>
-        <div id="slopeBoxB" class="fld">
-          <span>Pendenza falda B (%)</span>
-          <input id="slopeB" type="number" step="0.1" min="0" value="0">
-          <span class="small">Ripartizione larghezza: A <input id="splitA" type="number" min="0" max="100" value="50" style="width:80px;display:inline"> % — B <span id="splitB">50</span> %</span>
-        </div>
       </div>
 
       <!-- Decubito -->
       <div class="grid-4" style="margin-top:8px">
         <label>Quota area di decubito (%)
           <input id="quo" type="number" step="1" min="0" max="100">
-          <span class="small">Percentuale dell’<b>area lorda interna</b> destinata alle aree di riposo/stallo (lettiera, box, cuccette).<br>
-          <b>Superficie di decubito</b> = Area lorda interna × Quota / 100.</span>
+          <span class="small">
+            Percentuale dell’<b>area lorda interna</b> destinata alle aree di riposo/stallo (lettiera, box, cuccette).<br>
+            <b>Superficie di decubito</b> = Area lorda interna × Quota / 100.
+          </span>
         </label>
         <div></div><div></div><div></div>
       </div>
 
-      <!-- Riepiloghi aree e costi -->
+      <!-- Riepiloghi aree -->
       <div class="grid-4" style="margin-top:12px">
         <div class="card"><div class="small">Area lorda interna</div><div class="value"><span id="areaLorda">0.0</span> m²</div></div>
         <div class="card"><div class="small">Copertura in pianta (sporti inclusi)</div><div class="value"><span id="areaCoperta">0.0</span> m²</div></div>
@@ -159,10 +141,11 @@
         <div class="card"><div class="small">Area normativa richiesta</div><div class="value"><span id="areaNormativa">0.0</span> m²</div></div>
       </div>
 
+      <!-- Costi -->
       <div class="grid-4" style="margin-top:12px">
         <div class="card"><div class="small">Costo €/m² (tipo)</div><div class="value"><span id="costoMq">—</span></div></div>
         <div class="card"><div class="small">Costo acciaio (€/kg variabile)</div><div class="value"><span id="costoKg">—</span></div></div>
-        <div class="card"><div class="small">Extra meteo (neve + vento)</div><div class="value"><span id="extraMeteo">—</span></div></div>
+        <div class="card"><div class="small">Neve e vento</div><div class="value"><span id="extraMeteo">—</span></div></div>
         <div class="card"><div class="small">Costo struttura</div><div class="value"><span id="costoStruttura">—</span></div></div>
       </div>
 
@@ -171,9 +154,10 @@
       </label>
     </section>
 
-    <!-- POPOLAZIONI & STABULAZIONI (invariata) -->
+    <!-- POPOLAZIONI & STABULAZIONI (come prima) -->
     <section class="card" style="margin-top:12px">
       <h2 style="color:var(--brand)">Popolazioni &amp; stabulazioni</h2>
+
       <div class="grid-2" style="margin-top:8px">
         <div class="specie card">
           <div class="toolbar" style="justify-content:space-between"><h3>Bovine adulte</h3></div>
@@ -232,7 +216,7 @@
             <label>Stabulazione <select id="s-manzeBufaline"></select></label>
             <label>Livello <select id="l-manzeBufaline"></select></label>
           </div>
-          <div class="small">Valore unitario: <span id="vu-manzeBufaline">0.00</span> m²/capo</div>
+          <div class="small">Valore unitario: <span id="vu-manzebufaline">0.00</span> m²/capo</div>
         </div>
       </div>
 
@@ -241,7 +225,7 @@
         <div class="grid-4">
           <label>N. gruppi <input id="ing-gr" type="number" min="0"></label>
           <label>Capi per gruppo <input id="ing-cpg" type="number" min="0"></label>
-          <label>Peso medio (kg) <input id="ing-peso" type="number" min="0"></label>
+          <label>Peso medio (kg) <input id="ing-peso" type="number" min="0" value="550"></label>
           <label>Livello
             <select id="ing-liv"><option>Adeguato</option><option>Modesto</option><option>Ottimo</option></select>
           </label>
