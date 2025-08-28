@@ -14,8 +14,126 @@
       { "maxPesoKg": 700, "mq": 5.25, "label": "opt" }
     ]
   },
+
   "meteo": {
     "neve_eur_per_kgm2": 0,
-    "vento_eur_per_ms": 0
-  }
+    "vento_eur_per_ms": 0,
+    "snow_mu_reduction_per_slope_pct": 0.0,
+    "snow_mu_min": 0.0,
+    "snow_mu_max": 1.0
+  },
+
+  "strutture": [
+    {
+      "id": "acciaio_zincato",
+      "label": "Struttura metallica zincata",
+      "forma": "bifalda",
+      "prezzoMq": 180,
+      "kg_per_mq_base": 34
+    },
+    {
+      "id": "prefabbricato_ca",
+      "label": "Prefabbricato in c.a.",
+      "forma": "piano",
+      "prezzoMq": 0,
+      "kg_per_mq_base": 0
+    },
+    {
+      "id": "legno_lamellare",
+      "label": "Legno lamellare",
+      "forma": "bifalda",
+      "prezzoMq": 0,
+      "kg_per_mq_base": 0
+    },
+    {
+      "id": "mista",
+      "label": "Struttura mista",
+      "forma": "bifalda",
+      "prezzoMq": 0,
+      "kg_per_mq_base": 0
+    }
+  ],
+
+  "euro_per_kg_scale": [
+    { "minArea_m2": 0,   "eurPerKg": 8.0 },
+    { "minArea_m2": 100, "eurPerKg": 7.0 },
+    { "minArea_m2": 200, "eurPerKg": 6.5 },
+    { "minArea_m2": 400, "eurPerKg": 6.0 },
+    { "minArea_m2": 600, "eurPerKg": 5.5 },
+    { "minArea_m2": 800, "eurPerKg": 5.0 },
+    { "minArea_m2": 1000,"eurPerKg": 4.5 },
+    { "minArea_m2": 1500,"eurPerKg": 3.5 },
+    { "minArea_m2": 2000,"eurPerKg": 2.9 }
+  ],
+
+  "vento": {
+    "buckets": {
+      "altezza_m": [3, 6],
+      "passo_m": [4.5]
+    },
+    "sovrapprezzo": {
+      "bifalda_H1_P1": 0,
+      "bifalda_H1_P2": 0,
+      "bifalda_H2_P1": 0,
+      "bifalda_H2_P2": 0,
+      "bifalda_H3_P1": 0,
+      "bifalda_H3_P2": 0,
+      "monofalda_H1_P1": 0,
+      "monofalda_H1_P2": 0,
+      "monofalda_H2_P1": 0,
+      "monofalda_H2_P2": 0,
+      "monofalda_H3_P1": 0,
+      "monofalda_H3_P2": 0,
+      "piano_H1_P1": 0,
+      "piano_H1_P2": 0,
+      "piano_H2_P1": 0,
+      "piano_H2_P2": 0,
+      "piano_H3_P1": 0,
+      "piano_H3_P2": 0,
+      "default": 0
+    }
+  },
+
+  "servizi_fissi": [
+    {
+      "descrizione": "Relazione di calcolo strutturale firmata da un tecnico abilitato comprensiva di disegni esecutivi",
+      "um": "Nr",
+      "qta": 1,
+      "prezzo": 1950.00,
+      "stato": "a_prezzo",
+      "conteggia": true
+    },
+    {
+      "descrizione": "Direzione lavori per la carpenteria metallica.",
+      "um": "—",
+      "qta": 1,
+      "prezzo": 0,
+      "stato": "inclusa",
+      "conteggia": false
+    },
+    {
+      "descrizione": "Calcolo plinti di fondazioni e disegni esecutivi",
+      "um": "Nr",
+      "qta": 1,
+      "prezzo": 1500.00,
+      "stato": "a_prezzo",
+      "conteggia": true
+    },
+    {
+      "descrizione": "Direzione lavori opere in c.a.",
+      "um": "—",
+      "qta": 1,
+      "prezzo": 0,
+      "stato": "inclusa",
+      "conteggia": false
+    },
+    {
+      "descrizione": "Prove dei materiali",
+      "um": "—",
+      "qta": 1,
+      "prezzo": 0,
+      "stato": "escluse",
+      "conteggia": false
+    }
+  ]
 }
