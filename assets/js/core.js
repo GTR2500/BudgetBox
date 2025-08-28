@@ -1,28 +1,25 @@
 /* BudgetBox – Pagina 1
-   Pendenze da TXT + altezza colmo da larghezza/forma + sporti unificati + extra neve/vento %.
-   Rev: v0.1.4
+   Altezza colmo in campo dedicato (readonly) + pendenza da TXT + calcoli falda.
+   Rev: v0.1.5
 */
 (function (global) {
-  var APP_VERSION = "v0.1.4";
+  var APP_VERSION = "v0.1.5";
 
   // ---------- STATO ----------
   var state = {
     anagrafica: { cliente:"", localitaId:"", localita:"", riferimento:"", data: new Date().toISOString().slice(0,10) },
     cap: {
-      // unico tipo: acciaio zincato
       tipoId:"acciaio_zincato",
-      forma:"bifalda",        // id canonico: piano | monofalda | bifalda | dente_sega | cattedrale
+      forma:"bifalda",        // piano | monofalda | bifalda | dente_sega | cattedrale
       prezzoMq:180,
       kgBase:34,
-      // geometria base
       lunghezza:60,
       larghezza:25,
       campN:0,
       campInt:0,
-      hTrave:0,               // quota gronda (punto più basso)
-      // sporti unificati (fronte/retro e sx/dx)
-      spTest:0,
-      spGr:0,
+      hTrave:0,               // quota alla gronda (punto più basso)
+      spTest:0,               // sporto testata (fronte+retro)
+      spGr:0,                 // sporto gronda (sx+dx)
       quotaDecubito:70,
       note:"Struttura metallica zincata, copertura sandwich 40 mm"
     },
@@ -110,7 +107,7 @@
     return out.sort(function(a,b){ return a.nome.localeCompare(b.nome,"it"); });
   }
 
-  // ---------- PARSER FORME COPERTURA (TXT) ----------
+  // ---------- PARSER FORME (TXT) ----------
   function canonicalId(label){
     var s = (label||"").toLowerCase();
     if (s.indexOf("piano")>=0) return "piano";
@@ -152,7 +149,6 @@
     if(n>0 && p>0) return n*p; return num(state.cap.lunghezza);
   }
   function covDims(){
-    // dimensioni coperte considerate per la superficie di copertura (sporti inclusi)
     var Lcov = num(state.cap.lunghezza) + 2*num(state.cap.spTest);
     var Wcov = num(state.cap.larghezza) + 2*num(state.cap.spGr);
     return {Lcov:Lcov, Wcov:Wcov};
@@ -160,45 +156,40 @@
   function areaLorda(){ return num(state.cap.larghezza) * num(state.cap.lunghezza); }
   function areaCoperta(){ var d=covDims(); return d.Lcov * d.Wcov; }
 
-  // pendenza % stimata dal TXT (min–max) con lieve taratura meteo (neve↑/vento↓ entro il range)
+  // pendenza stimata (min–max da TXT) con lieve taratura neve/vento
   function estimatedSlopePct(){
     var f = FORME.find(function(x){return x.id===state.cap.forma;});
     if (!f) f = {minSlopePct:0, maxSlopePct:0};
     var min = num(f.minSlopePct), max = num(f.maxSlopePct);
     if (max < min) max = min;
     var base = (min + max) / 2;
-
-    // taratura leggera: neve spinge verso max, vento verso min (entro ±25% del range)
-    var cfg = norme.neve_vento_percent && norme.neve_vento_percent.scales || {};
-    var neveN  = cfg.neve  && cfg.neve.max  ? Math.max(0, Math.min(1, num(state.meteo.neve_kgm2)/num(cfg.neve.max)))   : 0;
-    var ventoN = cfg.vento && cfg.vento.max ? Math.max(0, Math.min(1, num(state.meteo.vento_ms)/num(cfg.vento.max))) : 0;
+    var sc = norme.neve_vento_percent && norme.neve_vento_percent.scales || {};
+    var neveN  = sc.neve  && sc.neve.max  ? Math.max(0, Math.min(1, num(state.meteo.neve_kgm2)/num(sc.neve.max)))   : 0;
+    var ventoN = sc.vento && sc.vento.max ? Math.max(0, Math.min(1, num(state.meteo.vento_ms)/num(sc.vento.max))) : 0;
     var adj = (neveN - ventoN) * (max - min) * 0.25;
-    var out = Math.max(min, Math.min(max, base + adj));
-    return out;
+    return Math.max(min, Math.min(max, base + adj));
   }
 
-  // Altezza colmo (hTrave = quota minima alla gronda)
   function altezzaColmo(){
     var d = covDims(), W = d.Wcov;
     var slope = estimatedSlopePct(); // %
     var rise;
     if (state.cap.forma === "monofalda" || state.cap.forma === "piano"){
-      rise = W * slope / 100; // pendenza su tutta la larghezza
+      rise = W * slope / 100;
     } else {
-      rise = (W/2) * slope / 100; // bifalda, cattedrale, dente_sega → metà luce
+      rise = (W/2) * slope / 100;
     }
     return num(state.cap.hTrave) + rise;
   }
 
-  // Superficie di copertura in falda (somma faldoni) – stessa pendenza su entrambe
   function areaFalda(){
     var d = covDims();
     var slope = estimatedSlopePct();
-    var sec = Math.sqrt(1 + Math.pow(slope/100, 2)); // 1/cos(θ)
+    var sec = Math.sqrt(1 + Math.pow(slope/100, 2)); // 1/cos
     return d.Lcov * d.Wcov * sec;
   }
 
-  // ---------- NORMATIVA POPOLAZIONI ----------
+  // ---------- NORME POPOLAZIONI ----------
   function ingrassoMqPerCapo(peso){
     var arr = norme.ingrasso.mq_per_capo;
     for (var i=0;i<arr.length;i++){ if(peso<=arr[i].maxPesoKg) return arr[i].mq; }
@@ -221,7 +212,6 @@
     for (var i=0;i<scale.length;i++){ if (A >= num(scale[i].minArea_m2)) v = num(scale[i].eurPerKg); }
     return v;
   }
-  // percentuale neve+vento (3–15%) su base + acciaio
   function neveVentoPercent(){
     var cfg = norme.neve_vento_percent || {};
     var w = cfg.weights || {};
@@ -259,7 +249,7 @@
     return {stato:stato, pct: Math.round(ratio*100)};
   }
 
-  // ---------- SCHIZZI (SVG compatti) ----------
+  // ---------- SCHIZZO (compatto) ----------
   function sketch(forma){
     var c = "currentColor";
     if(forma==="piano"){
@@ -274,7 +264,6 @@
     if(forma==="cattedrale"){
       return '<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 L60 28 L110 50" stroke="'+c+'" stroke-width="2" fill="none"/><path d="M35 50 L60 39 L85 50" stroke="'+c+'" stroke-width="2" fill="none"/></svg>';
     }
-    // bifalda
     return '<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 L60 28 L110 50" stroke="'+c+'" stroke-width="2" fill="none"/></svg>';
   }
 
@@ -328,8 +317,9 @@
     var elEX  = byId("extraMeteo"); if(elEX) elEX.textContent = fmt2(CT.extraPct) + "% — " + CT.extraEuro.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
     var elCT  = byId("costoStruttura"); if(elCT) elCT.textContent = CT.totale.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
 
-    var pen = byId("pendenzaStimata"); if (pen) pen.textContent = fmt2(estimatedSlopePct());
-    var hCol = byId("hColmo"); if (hCol) hCol.textContent = fmt2(altezzaColmo());
+    // campo dedicato Altezza colmo
+    var hCol = byId("hColmoVal");
+    if (hCol) hCol.value = fmt2(altezzaColmo());
 
     var ok = (state.anagrafica.cliente||"").trim().length>0 && num(state.cap.lunghezza)>0 && num(state.cap.larghezza)>0;
     var next = byId("btn-next"); if (next) next.disabled = !ok;
@@ -343,7 +333,6 @@
     if (!list.length){ sel.innerHTML='<option value="bifalda">bifalda</option>'; }
     else sel.innerHTML = list.map(function(f){ return '<option value="'+f.id+'">'+(f.label||f.id)+'</option>'; }).join("");
 
-    // set value corrente
     if (!list.find(function(x){return x.id===state.cap.forma;})) state.cap.forma = list[0].id;
     sel.value = state.cap.forma;
 
@@ -419,34 +408,26 @@
       }
       updateLocBadge();
 
-      // Selettore forma da TXT
+      // Forma copertura da TXT
       loadFormeSelect();
 
-      // Tipo struttura (unico)
+      // Tipo struttura (unico per ora)
       var tipoSel = byId("tipoStruttura");
       if (tipoSel){
         tipoSel.innerHTML = '<option value="acciaio_zincato">Struttura metallica zincata</option>';
         tipoSel.value = state.cap.tipoId;
-        tipoSel.addEventListener("change", function(){
-          state.cap.tipoId = tipoSel.value;
-          // valori restano quelli di default da norme/strutture[0] se presenti
-          refresh();
-        });
       }
 
-      // Carica eventuali default da norme.strutture[0]
+      // Default da norme
       var s0 = (norme.strutture||[])[0];
       if (s0){
         state.cap.prezzoMq = num(s0.prezzoMq||state.cap.prezzoMq);
         state.cap.kgBase   = num(s0.kg_per_mq_base||state.cap.kgBase);
-        var prz = byId("prz"); if(prz){ prz.value = state.cap.prezzoMq; }
-        var kgb = byId("kgBase"); if(kgb){ kgb.value = state.cap.kgBase; }
       }
-
-      // Inputs vari
       var prz = byId("prz"); if(prz){ prz.value=state.cap.prezzoMq; prz.addEventListener("input", function(e){ state.cap.prezzoMq=num(e.target.value); refresh(); }); }
       var kgB = byId("kgBase"); if(kgB){ kgB.value=state.cap.kgBase; kgB.addEventListener("input", function(e){ state.cap.kgBase=num(e.target.value); refresh(); }); }
 
+      // input struttura
       ["campN","campInt","len","hTrave"].forEach(function(id){
         var el=byId(id); if(!el) return;
         el.addEventListener("input", function(e){
@@ -492,7 +473,7 @@
         var el=byId(idLbl); if(el) el.textContent=(norme.unitari_mq[k]||0).toFixed(2);
       });
 
-      // Pulsanti
+      // pulsanti
       var checkBtn = byId("checkBtn");
       if (checkBtn) checkBtn.addEventListener("click", function(){
         var cf = conformita();
@@ -500,22 +481,10 @@
       });
       var next = byId("btn-next");
       if (next) next.addEventListener("click", function(){
-        alert("La suddivisione in pagine 2/3/4 la attiviamo appena chiudiamo la 1 (impianti, accessori, riepilogo).");
+        alert("Proseguiamo con Pagina 2 dopo la chiusura definitiva della 1.");
       });
 
-      // badge header footer
       var tf = byId("titleFooter"); if (tf) tf.textContent = repoName();
-
-      // aggiungo visualizzazione altezza colmo (se presente nello UI)
-      var sk = byId("sketch");
-      if (sk && !document.getElementById("colmoBox")){
-        var span = document.createElement("span");
-        span.id = "colmoBox";
-        span.className = "small";
-        span.style.marginLeft = "8px";
-        span.innerHTML = ' | <b>Altezza colmo</b>: <span id="hColmo">0.00</span> m';
-        sk.parentNode.appendChild(span);
-      }
 
       refresh();
     })
