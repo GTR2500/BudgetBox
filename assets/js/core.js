@@ -1,9 +1,9 @@
 /* BudgetBox – Pagina 1
-   Badge "X capi" per specie + ingrasso. Altezza colmo calcolata, pendenza da TXT.
-   Rev: v0.1.6
+   Badge "X capi" verdi quando > 0. Altezza colmo calcolata, pendenza da TXT.
+   Rev: v0.1.7
 */
 (function (global) {
-  var APP_VERSION = "v0.1.6";
+  var APP_VERSION = "v0.1.7";
 
   // ---------- STATO ----------
   var state = {
@@ -244,7 +244,7 @@
     var req=areaNormativaRichiesta(), real=areaLorda()*num(state.cap.quotaDecubito)/100;
     if(req===0 && real===0) return {stato:"—", pct:100};
     var ratio = req>0 ? real/req : 0;
-    var stato = ratio>=1.1 ? "Adeguato" : (ratio>=1.0 ? "Conforme" : "Non conforme");
+    var stato = ratio>=1.1 ? "Adeguato" : (ratio>=1.0 ? "Conforme") : "Non conforme";
     return {stato:stato, pct: Math.round(ratio*100)};
   }
 
@@ -283,9 +283,13 @@
     badge.className = "badge meta";
   }
 
+  // >>> qui la modifica: badge verde se val > 0
   function setCapBadge(id, val){
     var el = byId(id);
-    if (el) el.textContent = (num(val)||0) + " capi";
+    if (!el) return;
+    var n = num(val)||0;
+    el.textContent = n + " capi";
+    el.className = n > 0 ? "badge ok" : "badge";
   }
 
   function refresh(){
