@@ -1,0 +1,6 @@
+descrizione;um;qta;prezzo;stato;conteggia
+Relazione di calcolo strutturale firmata da un tecnico abilitato comprensiva di disegni esecutivi;Nr;1;1950.00;a_prezzo;true
+Direzione lavori per la carpenteria metallica.;—;1;0;inclusa;false
+Calcolo plinti di fondazioni e disegni esecutivi;Nr;1;1500.00;a_prezzo;true
+Direzione lavori opere in c.a.;—;1;0;inclusa;false
+Prove dei materiali;—;1;0;escluse;false
