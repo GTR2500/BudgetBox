@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="assets/css/app.css" />
 </head>
 <body>
-  <!-- Header / Topbar -->
   <header class="topbar">
     <div class="topbar-left">
       <img class="logo" alt="Grimaldelli s.r.l." src="https://www.glcgrimaldelli.com/wp-content/uploads/2019/06/Logo-Sottopagine.jpg" />
@@ -21,18 +20,11 @@
   </header>
 
   <main class="container">
-    <!-- Sezione ANAGRAFICA -->
+    <!-- ANAGRAFICA -->
     <section class="card">
-      <div class="card-title">
-        <h2>Anagrafica</h2>
-      </div>
+      <div class="card-title"><h2>Anagrafica</h2></div>
 
-      <!-- Badge meteo sopra Località -->
-      <div class="row">
-        <div class="col col-12">
-          <div id="badge-meteo" class="badge meta">—</div>
-        </div>
-      </div>
+      <div class="row"><div class="col col-12"><div id="badge-meteo" class="badge meta">—</div></div></div>
 
       <div class="row">
         <div class="col col-4">
@@ -64,11 +56,9 @@
       </div>
     </section>
 
-    <!-- Sezione STRUTTURA -->
+    <!-- STRUTTURA -->
     <section class="card">
-      <div class="card-title">
-        <h2>Struttura</h2>
-      </div>
+      <div class="card-title"><h2>Struttura</h2></div>
 
       <div class="row">
         <div class="col col-4">
@@ -80,9 +70,7 @@
           <select id="formaCopertura"></select>
           <small id="formaDescr" class="help">—</small>
         </div>
-        <div class="col col-4 sketch-box">
-          <div id="sketch"></div>
-        </div>
+        <div class="col col-4 sketch-box"><div id="sketch"></div></div>
       </div>
 
       <div class="row">
@@ -161,31 +149,19 @@
       </div>
     </section>
 
-    <!-- Sezione POPOLAZIONI & STABULAZIONI -->
+    <!-- POPOLAZIONI -->
     <section class="card">
-      <div class="card-title">
-        <h2>Popolazioni & stabulazioni</h2>
-      </div>
+      <div class="card-title"><h2>Popolazioni & stabulazioni</h2></div>
 
-      <!-- RIGA 1 -->
       <div class="row pop">
         <div class="col col-3">
           <label>Bovine adulte</label>
           <input id="n-bovineAdulte" type="number" min="0" step="1" placeholder="N capi" />
           <span id="cap-bovineAdulte" class="badge">0 capi</span>
         </div>
-        <div class="col col-3">
-          <label>Stabulazione</label>
-          <select id="s-bovineAdulte"></select>
-        </div>
-        <div class="col col-3">
-          <label>Livello</label>
-          <select id="l-bovineAdulte"><option>Adeguato</option><option>Ottimale</option></select>
-        </div>
-        <div class="col col-3 vu">
-          <label>m²/capo</label>
-          <div id="vu-bovineAdulte">—</div>
-        </div>
+        <div class="col col-3"><label>Stabulazione</label><select id="s-bovineAdulte"></select></div>
+        <div class="col col-3"><label>Livello</label><select id="l-bovineAdulte"><option>Adeguato</option><option>Ottimale</option></select></div>
+        <div class="col col-3 vu"><label>m²/capo</label><div id="vu-bovineAdulte">—</div></div>
       </div>
 
       <div class="row pop">
@@ -210,7 +186,6 @@
         <div class="col col-3 vu"><label>m²/capo</label><div id="vu-toriRimonta">—</div></div>
       </div>
 
-      <!-- RIGA 2 -->
       <div class="row pop">
         <div class="col col-3">
           <label>Bufale adulte</label>
@@ -244,7 +219,6 @@
         <div class="col col-3 vu"><label>m²/capo</label><div id="vu-manzebufaline">—</div></div>
       </div>
 
-      <!-- INGRASSO -->
       <div class="row pop">
         <div class="col col-3">
           <label>Ingrasso — gruppi</label>
@@ -266,20 +240,12 @@
       </div>
 
       <div class="row pop">
-        <div class="col col-3">
-          <label>Stabulazione ingrasso</label>
-          <select id="ing-stab"></select>
-        </div>
-        <div class="col col-3">
-          <label>Livello ingrasso</label>
-          <select id="ing-liv"><option>Adeguato</option><option>Ottimale</option></select>
-        </div>
+        <div class="col col-3"><label>Stabulazione ingrasso</label><select id="ing-stab"></select></div>
+        <div class="col col-3"><label>Livello ingrasso</label><select id="ing-liv"><option>Adeguato</option><option>Ottimale</option></select></div>
       </div>
     </section>
 
-    <div class="next-wrap">
-      <button id="btn-next" class="btn primary" disabled>Prosegui → Impianti</button>
-    </div>
+    <div class="next-wrap"><button id="btn-next" class="btn primary" disabled>Prosegui → Impianti</button></div>
   </main>
 
   <footer class="footer">
@@ -287,14 +253,5 @@
   </footer>
 
   <script src="assets/js/core.js" defer></script>
-  <script>
-    window.addEventListener('DOMContentLoaded', function(){
-      if (window.PreventivoApp && typeof window.PreventivoApp.initPagina1 === 'function') {
-        try { window.PreventivoApp.initPagina1(); } catch (e) { alert("Errore init pagina: " + e.message); console.error(e); }
-      } else {
-        alert("Script non caricato correttamente. Controlla assets/js/core.js");
-      }
-    });
-  </script>
 </body>
 </html>
