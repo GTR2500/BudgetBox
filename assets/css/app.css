@@ -1,4 +1,3 @@
-/* ==== BudgetBox - stile iniziale (light, arancione) ==== */
 :root{
   --bg:#f3f5f9;
   --panel:#ffffff;
@@ -12,71 +11,34 @@
   --gap:14px;
   --shadow:0 8px 24px rgba(16,22,40,.08);
 }
-
 *{box-sizing:border-box}
 html,body{height:100%}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif
-}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 .bb-container{max-width:1200px;margin:0 auto;padding:0 18px}
 
 /* Header */
-.bb-header{
-  position:sticky;top:0;z-index:50;
-  background:rgba(255,255,255,.75);
-  backdrop-filter: blur(8px);
-  border-bottom:1px solid var(--border)
-}
+.bb-header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.75);backdrop-filter: blur(8px);border-bottom:1px solid var(--border)}
 .bb-header__inner{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
 .bb-brand{display:flex;align-items:center;gap:12px}
-
-/* Logo immagine (44x44, raggio 12, bordo 1px) */
-.bb-logo-img{
-  width:44px;height:44px;border-radius:12px;
-  border:1px solid var(--border);object-fit:cover;display:block
-}
-
+.bb-logo-img{width:44px;height:44px;border-radius:12px;border:1px solid var(--border);object-fit:cover;display:block}
 .bb-appname{margin:0;font-size:22px;letter-spacing:.2px}
 .bb-header__right{display:flex;align-items:center;gap:8px}
 .bb-rev{font-size:12px;color:var(--muted);padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--panel-2)}
-
-.bb-btn{
-  background:var(--panel);
-  color:var(--text);
-  border:1px solid var(--border);
-  border-radius:999px;
-  padding:8px 14px;
-  cursor:pointer;
-  box-shadow:var(--shadow)
-}
+.bb-btn{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:8px 14px;cursor:pointer;box-shadow:var(--shadow)}
 .bb-btn:hover{border-color:#d7ddea}
 .bb-btn--ghost{background:transparent;box-shadow:none}
-.bb-btn--sm{padding:6px 10px;font-size:13px}
 .bb-btn--primary{background:var(--accent);color:#231a12;border-color:#f06f10}
 
 /* Main cards */
 .bb-main{padding:22px 0 42px}
-.bb-card{
-  background:var(--panel);
-  border:1px solid var(--accent); /* bordo arancione */
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  padding:18px; margin:16px 0
-}
+.bb-card{background:var(--panel);border:1px solid var(--accent);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin:16px 0}
 .bb-card__title{padding:4px 0 10px}
 .bb-card__title h2{margin:0;color:#ff7a18;font-size:20px;letter-spacing:.2px}
 
-/* Meteo pill row */
+/* Meteo pill */
 .bb-meteo-row{display:flex;align-items:center;gap:10px;margin:2px 0 12px}
 .bb-meteo-label{font-size:13px;color:var(--muted)}
-.bb-pill{
-  display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;
-  padding:6px 10px;border-radius:999px;background:#e6f0ff;border:1px solid #cfe0ff;color:#0f3270;
-  font-size:13px;line-height:1.2
-}
+.bb-pill{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;padding:6px 10px;border-radius:999px;background:#e6f0ff;border:1px solid #cfe0ff;color:#0f3270;font-size:13px;line-height:1.2}
 .bb-pill-sub{opacity:.8;font-size:12px}
 
 /* Grid */
@@ -93,29 +55,13 @@ body{
 /* Fields */
 .bb-field{display:grid;gap:6px}
 .bb-field>span{font-size:12px;color:var(--muted)}
-.bb-field input, .bb-field select{
-  width:100%;background:var(--panel-2);color:var(--text);
-  border:1px solid var(--border);border-radius:10px;padding:10px 12px; outline:none
-}
+.bb-field input,.bb-field select,.bb-field textarea{width:100%;background:var(--panel-2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;outline:none}
+.bb-field textarea{resize:vertical}
 .bb-field--note input{background:#fafbff}
-.bb-hint{font-size:12px;color:var(--muted);margin-top:6px}
+.bb-hint{font-size:12px;color:var(--muted);margin-top:4px}
 .bb-hint-inline{font-weight:400;color:var(--muted);margin-left:6px}
 
-/* Stato superficie (sezione precedente) */
-.bb-state{
-  display:grid;grid-template-rows:auto auto auto;gap:6px;
-  align-content:start;padding:8px 10px;border:1px dashed var(--border);
-  border-radius:10px;background:var(--panel-2)
-}
-.bb-state__label{font-size:12px;color:var(--muted)}
-.bb-state__value{display:flex;align-items:center;gap:8px}
-.bb-state__pct{color:var(--muted)}
-.bb-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid transparent;font-size:13px}
-.bb-chip--green{background:#e7f8ea;color:#0e6b25;border-color:#c9efcf}
-.bb-chip--yellow{background:#fff7e5;color:#6a4a00;border-color:#ffe7b4}
-.bb-chip--red{background:#ffe9ea;color:#7d1017;border-color:#ffc9cd}
-
-/* KPI strip */
+/* KPI */
 .bb-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
 .bb-kpis--full{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media (max-width:1100px){.bb-kpis--full{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -124,10 +70,8 @@ body{
 .bb-kpi__label{font-size:12px;color:var(--muted)}
 .bb-kpi__value{font-weight:700;margin-top:4px}
 
-/* Popolazioni */
-.bb-box{
-  border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--panel-2)
-}
+/* Popolazioni: lasciate come sono */
+.bb-box{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--panel-2)}
 .bb-box__title{font-weight:700;margin-bottom:10px}
 .bb-box--wide{grid-column:1/-1}
 
