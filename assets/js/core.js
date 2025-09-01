@@ -1,9 +1,9 @@
 /* BudgetBox – Pagina 1
-   Altezza colmo in campo dedicato (readonly) + pendenza da TXT + calcoli falda.
-   Rev: v0.1.5
+   Badge "X capi" per specie + ingrasso. Altezza colmo calcolata, pendenza da TXT.
+   Rev: v0.1.6
 */
 (function (global) {
-  var APP_VERSION = "v0.1.5";
+  var APP_VERSION = "v0.1.6";
 
   // ---------- STATO ----------
   var state = {
@@ -156,7 +156,6 @@
   function areaLorda(){ return num(state.cap.larghezza) * num(state.cap.lunghezza); }
   function areaCoperta(){ var d=covDims(); return d.Lcov * d.Wcov; }
 
-  // pendenza stimata (min–max da TXT) con lieve taratura neve/vento
   function estimatedSlopePct(){
     var f = FORME.find(function(x){return x.id===state.cap.forma;});
     if (!f) f = {minSlopePct:0, maxSlopePct:0};
@@ -199,7 +198,7 @@
     var u=norme.unitari_mq, p=state.popolazioni;
     var base = num(p.bovineAdulte.n)*u.bovineAdulte + num(p.manzeBovine.n)*u.manzeBovine +
                num(p.toriRimonta.n)*u.toriRimonta   + num(p.bufaleAdulte.n)*u.bufaleAdulte +
-               num(p.bufaleParto.n)*u.bufaleParto   + num(p.manzeBufaline.n)*u.manzeBufaline;
+               num(p.bufaleParto.n)*u.bufaleParto   + num(p.manzeBufaline.n)*u.manzebufaline;
     var nIng = num(p.ingrasso.gruppi)*num(p.ingrasso.capiPerGruppo);
     var mqIng = nIng*ingrassoMqPerCapo(num(p.ingrasso.peso));
     return base + mqIng;
@@ -284,6 +283,11 @@
     badge.className = "badge meta";
   }
 
+  function setCapBadge(id, val){
+    var el = byId(id);
+    if (el) el.textContent = (num(val)||0) + " capi";
+  }
+
   function refresh(){
     // lunghezza da campate se presente
     var Lcalc = lengthFromCampate();
@@ -317,9 +321,19 @@
     var elEX  = byId("extraMeteo"); if(elEX) elEX.textContent = fmt2(CT.extraPct) + "% — " + CT.extraEuro.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
     var elCT  = byId("costoStruttura"); if(elCT) elCT.textContent = CT.totale.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
 
-    // campo dedicato Altezza colmo
+    // campo Altezza colmo
     var hCol = byId("hColmoVal");
     if (hCol) hCol.value = fmt2(altezzaColmo());
+
+    // badge capi per ogni specie
+    setCapBadge("cap-bovineAdulte", state.popolazioni.bovineAdulte.n);
+    setCapBadge("cap-manzeBovine",  state.popolazioni.manzeBovine.n);
+    setCapBadge("cap-toriRimonta",  state.popolazioni.toriRimonta.n);
+    setCapBadge("cap-bufaleAdulte", state.popolazioni.bufaleAdulte.n);
+    setCapBadge("cap-bufaleParto",  state.popolazioni.bufaleParto.n);
+    setCapBadge("cap-manzeBufaline",state.popolazioni.manzeBufaline.n);
+    var nIng = num(state.popolazioni.ingrasso.gruppi)*num(state.popolazioni.ingrasso.capiPerGruppo);
+    setCapBadge("cap-ingrasso", nIng);
 
     var ok = (state.anagrafica.cliente||"").trim().length>0 && num(state.cap.lunghezza)>0 && num(state.cap.larghezza)>0;
     var next = byId("btn-next"); if (next) next.disabled = !ok;
@@ -466,8 +480,6 @@
       });
 
       // Valori unitari label
-      var mapVU = { bovineAdulte:"vu-bovineAdulte", manzeBovine:"vu-manzeBovine", toriRimonta:"vu-toriRimonta",
-                    bufaleAdulte:"vu-bufaleAdulte", bufaleParto:"vu-bufaleParto", manzeBufaline:"vu-manzebufaline" };
       Object.keys(norme.unitari_mq||{}).forEach(function(k){
         var idLbl = (k==="manzeBufaline") ? "vu-manzebufaline" : ("vu-"+k);
         var el=byId(idLbl); if(el) el.textContent=(norme.unitari_mq[k]||0).toFixed(2);
@@ -485,6 +497,9 @@
       });
 
       var tf = byId("titleFooter"); if (tf) tf.textContent = repoName();
+
+      // schizzo iniziale
+      var sk  = byId("sketch"); if(sk){ sk.innerHTML = sketch(state.cap.forma); }
 
       refresh();
     })
