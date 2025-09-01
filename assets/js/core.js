@@ -2,10 +2,10 @@
    Tutti i dati da /public/documenti/*.txt (niente JSON nel codice)
    - Carica: località, forme, strutture, €/kg scale, stabulazioni, range, ingrasso tabella, servizi, % neve/vento
    - Popola menu, calcola m²/capo dinamici, aree, altezza colmo, costi e badge
-   Rev: v0.3.0
+   Rev: v0.3.1 (bugfix manzeBufaline + bootstrap guard)
 */
 (function (global) {
-  var APP_VERSION = "v0.3.0";
+  var APP_VERSION = "v0.3.1";
 
   // ------------------------ Helpers ------------------------
   function num(v){ return Number((v||"").toString().replace(",", ".")) || 0; }
@@ -162,7 +162,8 @@
     var iId=head.indexOf("id"), iL=head.indexOf("label"), iF=head.indexOf("forma"), iP=head.indexOf("prezzomq"), iK=head.indexOf("kg_per_mq_base");
     var out=[];
     for (var i=1;i<lines.length;i++){
-      var c=lines[i].split(delim); out.push({ id:(c[iId]||"").trim(), label:(c[iL]||"").trim(), forma:canonicalId(c[iF]||""), prezzoMq:num(c[iP]), kg_per_mq_base:num(c[iK]) });
+      var c=lines[i].split(delim);
+      out.push({ id:(c[iId]||"").trim(), label:(c[iL]||"").trim(), forma:canonicalId(c[iF]||""), prezzoMq:num(c[iP]), kg_per_mq_base:num(c[iK]) });
     }
     return out;
   }
@@ -173,7 +174,8 @@
     var iA=head.indexOf("minarea_m2"), iE=head.indexOf("eurperkg");
     var out=[];
     for (var i=1;i<lines.length;i++){
-      var c=lines[i].split(delim); out.push({ minArea_m2:num(c[iA]), eurPerKg:num(c[iE]) });
+      var c=lines[i].split(delim);
+      out.push({ minArea_m2:num(c[iA]), eurPerKg:num(c[iE]) });
     }
     return out;
   }
@@ -184,7 +186,8 @@
     var iW=head.indexOf("peso"), iM=head.indexOf("min"), iO=head.indexOf("opt");
     var out=[];
     for (var i=1;i<lines.length;i++){
-      var c=lines[i].split(delim); out.push({ peso:num(c[iW]), min:num(c[iM]), opt:num(c[iO]) });
+      var c=lines[i].split(delim);
+      out.push({ peso:num(c[iW]), min:num(c[iM]), opt:num(c[iO]) });
     }
     return out.sort(function(a,b){return a.peso-b.peso;});
   }
@@ -196,7 +199,14 @@
     var out=[];
     for (var i=1;i<lines.length;i++){
       var c=lines[i].split(delim);
-      out.push({ descrizione:(c[iD]||"").trim(), um:(c[iU]||"").trim(), qta:num(c[iQ]), prezzo:num(c[iP]), stato:(c[iS]||"").trim(), conteggia: ((c[iC]||"").trim().toLowerCase()==="true") });
+      out.push({
+        descrizione:(c[iD]||"").trim(),
+        um:(c[iU]||"").trim(),
+        qta:num(c[iQ]),
+        prezzo:num(c[iP]),
+        stato:(c[iS]||"").trim(),
+        conteggia: ((c[iC]||"").trim().toLowerCase()==="true")
+      });
     }
     return out;
   }
@@ -430,13 +440,13 @@
 
     var hCol=byId("hColmoVal"); if(hCol) hCol.value=fmt2(altezzaColmo());
 
-    // badge capi
+    // badge capi (FIX typo manzeBufaline)
     setCapBadge("cap-bovineAdulte", state.popolazioni.bovineAdulte.n);
     setCapBadge("cap-manzeBovine",  state.popolazioni.manzeBovine.n);
     setCapBadge("cap-toriRimonta",  state.popolazioni.toriRimonta.n);
     setCapBadge("cap-bufaleAdulte", state.popolazioni.bufaleAdulte.n);
     setCapBadge("cap-bufaleParto",  state.popolazioni.bufaleParto.n);
-    setCapBadge("cap-manzeBufaline",state.popolazioni.manz eBufaline?.n || state.popolazioni.manzeBufaline.n);
+    setCapBadge("cap-manzeBufaline", state.popolazioni.manzeBufaline.n);
     var nIng=num(state.popolazioni.ingrasso.gruppi)*num(state.popolazioni.ingrasso.capiPerGruppo);
     setCapBadge("cap-ingrasso", nIng);
 
@@ -459,6 +469,17 @@
     sel.addEventListener("change",function(){ state.cap.forma=sel.value; var cur=list.find(function(x){return x.id===state.cap.forma;}); if(descr) descr.textContent=cur && cur.descr?cur.descr:""; var sk=byId("sketch"); if(sk){ sk.innerHTML=sketch(state.cap.forma); } refresh(); });
   }
 
+  function updateUnitariUISelects(){
+    // Opzioni stabulazione da DATA.stabulazioni.opzioni
+    function fill(cat){
+      var sel=byId("s-"+cat); if(!sel) return; var list=DATA.stabulazioni.opzioni[cat]||["libera_lettiera","libera_cuccette","fissa_posta"];
+      sel.innerHTML=list.map(function(v){return '<option value="'+v+'">'+v.replace(/_/g," ")+'</option>';}).join("");
+      if (list.indexOf(state.popolazioni[cat].stab)>=0) sel.value=state.popolazioni[cat].stab; else { state.popolazioni[cat].stab=list[0]; sel.value=list[0]; }
+    }
+    ["bovineAdulte","manzeBovine","toriRimonta","bufaleAdulte","bufaleParto","manzeBufaline"].forEach(fill);
+    var selIng=byId("ing-stab"); if(selIng){ var L=DATA.stabulazioni.opzioni.ingrasso||["libera_lettiera","grigliato"]; selIng.innerHTML=L.map(function(v){return '<option value="'+v+'">'+v.replace(/_/g," ")+'</option>';}).join(""); if(L.indexOf(state.popolazioni.ingrasso.stab)>=0) selIng.value=state.popolazioni.ingrasso.stab; else {state.popolazioni.ingrasso.stab=L[0]; selIng.value=L[0];} }
+  }
+
   function initPagina1(){
     // carica tutti i TXT
     Promise.all([
@@ -475,16 +496,28 @@
     ])
     .then(function(txts){
       // costruisci DATA
-      localitaDB = parseLocalitaTxt(txts[0]);
-      DATA.forme_copertura = parseFormeTxt(txts[1]);
-      DATA.strutture = parseStrutture(txts[2]);
-      DATA.euro_per_kg_scale = parseEuroScale(txts[3]);
-      DATA.unitari_mq = parseUnitari(txts[4]);
-      DATA.stabulazioni.opzioni = parseOpzioni(txts[5]);
-      DATA.stabulazioni.range_mq = parseRange(txts[6]);
-      DATA.ingrasso_tabella = parseIngrassoTab(txts[7]);
-      DATA.servizi_fissi = parseServizi(txts[8]);
-      DATA.neve_vento_percent = parseKVTable(txts[9]);
+      var localitaTxt   = txts[0];
+      var formeTxt      = txts[1];
+      var struttureTxt  = txts[2];
+      var euroScaleTxt  = txts[3];
+      var unitariTxt    = txts[4];
+      var stabOptTxt    = txts[5];
+      var stabRangeTxt  = txts[6];
+      var ingrassoTxt   = txts[7];
+      var serviziTxt    = txts[8];
+      var neveVentoTxt  = txts[9];
+
+      // parse
+      localitaDB                 = parseLocalitaTxt(localitaTxt);
+      DATA.forme_copertura       = parseFormeTxt(formeTxt);
+      DATA.strutture             = parseStrutture(struttureTxt);
+      DATA.euro_per_kg_scale     = parseEuroScale(euroScaleTxt);
+      DATA.unitari_mq            = parseUnitari(unitariTxt);
+      DATA.stabulazioni.opzioni  = parseOpzioni(stabOptTxt);
+      DATA.stabulazioni.range_mq = parseRange(stabRangeTxt);
+      DATA.ingrasso_tabella      = parseIngrassoTab(ingrassoTxt);
+      DATA.servizi_fissi         = parseServizi(serviziTxt);
+      DATA.neve_vento_percent    = parseKVTable(neveVentoTxt);
 
       // Header & comandi
       var titleEl=byId("title"); if(titleEl) titleEl.textContent=repoName();
@@ -588,6 +621,7 @@
     })
     .catch(function(err){
       alert("Errore inizializzazione (TXT): "+err.message);
+      console.error("[BudgetBox] Bootstrap error:", err);
     });
   }
 
