@@ -1,0 +1,13 @@
+# Parametri percentuale di ricarico "Neve & Vento"
+# Formula:
+#   I_neve  = neve_kgmq / BASE_NEVE
+#   I_vento = (vento_ms / BASE_VENTO)^2
+#   I       = PESO_NEVE*I_neve + PESO_VENTO*I_vento
+#   perc    = clamp(MIN_PERC + (MAX_PERC - MIN_PERC)*(I - 1), MIN_PERC, MAX_PERC)
+
+BASE_NEVE=100
+BASE_VENTO=25
+PESO_NEVE=0.5
+PESO_VENTO=0.5
+MIN_PERC=0.05
+MAX_PERC=0.25
