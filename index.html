@@ -1,275 +1,300 @@
-<!doctype html>
-<html lang="it">
+<!DOCTYPE html>
+<html lang="it" data-theme="light">
 <head>
-  <meta charset="utf-8">
-  <title>Pagina 1 — Anagrafica & Struttura</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="./assets/css/app.css" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BudgetBox</title>
+  <link rel="stylesheet" href="assets/css/app.css" />
 </head>
 <body>
-  <header>
-    <div class="container toolbar" style="justify-content:space-between">
-      <div class="logo" style="display:flex;align-items:center;gap:10px">
-        <img src="https://www.glcgrimaldelli.com/wp-content/uploads/2019/06/Logo-Sottopagine.jpg" alt="Grimaldelli" style="height:28px">
-        <h1 id="title" style="margin:0">Preventivi</h1>
-      </div>
-      <div class="header-right" style="display:flex;gap:10px;align-items:center">
-        <div class="rev">Rev <span id="revDate"></span> • <span id="revVer"></span></div>
-        <button id="printBtn" class="btn">Stampa / PDF</button>
-        <a class="btn btn-ghost" href="./impostazioni.html" title="Impostazioni">Impostazioni</a>
-        <button id="themeBtn" class="btn" title="Tema">🌙</button>
-      </div>
+  <!-- Header / Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <img class="logo" alt="Grimaldelli s.r.l." src="https://www.glcgrimaldelli.com/wp-content/uploads/2019/06/Logo-Sottopagine.jpg" />
+      <h1 id="title" class="title">BudgetBox</h1>
+      <span class="rev-badge">Rev <span id="revVer">—</span> · <span id="revDate">—</span></span>
+    </div>
+    <div class="topbar-right">
+      <button id="themeBtn" class="btn ghost" title="Tema">🌙</button>
+      <button id="printBtn" class="btn">Stampa/PDF</button>
     </div>
   </header>
 
-  <main class="container" style="padding-bottom:60px">
-    <!-- ANAGRAFICA -->
+  <main class="container">
+    <!-- Sezione ANAGRAFICA -->
     <section class="card">
-      <div class="toolbar" style="justify-content:space-between">
-        <h2 style="color:var(--brand)">Anagrafica</h2>
-        <span id="badge-meteo" class="badge meta">—</span>
+      <div class="card-title">
+        <h2>Anagrafica</h2>
       </div>
-      <div class="grid-4">
-        <label class="fld">
-          <span>Cliente</span>
-          <input id="cli" placeholder="Ragione sociale">
-        </label>
-        <label class="fld">
-          <span>Località</span>
+
+      <!-- Badge meteo sopra Località -->
+      <div class="row">
+        <div class="col col-12">
+          <div id="badge-meteo" class="badge meta">—</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col col-4">
+          <label for="cli">Cliente</label>
+          <input id="cli" type="text" placeholder="Ragione sociale / nominativo" />
+        </div>
+        <div class="col col-4">
+          <label for="rif">Riferimento</label>
+          <input id="rif" type="text" placeholder="Rif. interno" />
+        </div>
+        <div class="col col-4">
+          <label for="dat">Data</label>
+          <input id="dat" type="date" />
+        </div>
+      </div>
+
+      <div class="row align-end">
+        <div class="col col-8">
+          <label for="fld-localita">Località</label>
           <select id="fld-localita"></select>
-        </label>
-        <label class="fld">
-          <span>Riferimento</span>
-          <input id="rif" placeholder="Es. Rif. interno">
-        </label>
-        <label class="fld">
-          <span>Data</span>
-          <input id="dat" type="date">
-        </label>
+        </div>
+        <div class="col col-4 align-right">
+          <div class="check-wrap">
+            <button id="checkBtn" class="btn">Check superficie</button>
+            <span id="badge" class="badge">—</span>
+            <span id="badgePct" class="pct">—</span>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- STRUTTURA -->
-    <section class="card" style="margin-top:12px">
-      <div class="toolbar" style="justify-content:space-between;align-items:flex-start">
-        <h2 style="color:var(--brand)">Struttura</h2>
-        <div class="toolbar" style="gap:10px;flex-wrap:wrap">
-          <span class="small">Stato superficie:</span>
-          <span id="badge" class="badge">—</span>
-          <span class="small">(<span id="badgePct">0%</span>)</span>
-          <button id="checkBtn" class="btn">Check superficie</button>
-        </div>
+    <!-- Sezione STRUTTURA -->
+    <section class="card">
+      <div class="card-title">
+        <h2>Struttura</h2>
       </div>
 
-      <!-- Tipo, forma, prezzi -->
-      <div class="grid-4" style="margin-top:8px">
-        <label>Tipo di struttura
+      <div class="row">
+        <div class="col col-4">
+          <label for="tipoStruttura">Tipo di struttura</label>
           <select id="tipoStruttura"></select>
-        </label>
-        <label>Forma copertura
+        </div>
+        <div class="col col-4">
+          <label for="formaCopertura">Forma copertura</label>
           <select id="formaCopertura"></select>
-          <span id="formaDescr" class="small"></span>
-        </label>
-        <label>Prezzo struttura (€/m²)
-          <input id="prz" type="number" step="1" min="0">
-          <span class="small">Caricato dal tipo; modificabile a mano.</span>
-        </label>
-        <label>Kg acciaio (kg/m²)
-          <input id="kgBase" type="number" step="0.1" min="0">
-          <span class="small">Riferimento per il calcolo €/kg variabile.</span>
-        </label>
+          <small id="formaDescr" class="help">—</small>
+        </div>
+        <div class="col col-4 sketch-box">
+          <div id="sketch"></div>
+        </div>
       </div>
 
-      <!-- Schizzo -->
-      <div class="card" style="margin:8px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <div id="sketch" aria-label="schizzo struttura"></div>
-        <div class="small">Rappresentazione schematica della copertura selezionata (indicativa).</div>
+      <div class="row">
+        <div class="col col-4">
+          <label for="prz">Prezzo struttura (€/m²)</label>
+          <input id="prz" type="number" min="0" step="0.01" />
+        </div>
+        <div class="col col-4">
+          <label for="kgBase">Kg acciaio (kg/m²)</label>
+          <input id="kgBase" type="number" min="0" step="0.1" />
+        </div>
+        <div class="col col-4">
+          <label for="hColmoVal">Altezza colmo (m) — calcolata</label>
+          <input id="hColmoVal" type="text" readonly />
+        </div>
       </div>
 
-      <!-- Calcolati -->
-      <div class="grid-4" style="margin-top:8px">
-        <label>Altezza colmo (m) — calcolata
-          <input id="hColmoVal" type="number" step="0.01" readonly>
-        </label>
-        <div></div><div></div><div></div>
+      <div class="row">
+        <div class="col col-3">
+          <label for="campN">N° campate</label>
+          <input id="campN" type="number" min="0" step="1" />
+        </div>
+        <div class="col col-3">
+          <label for="campInt">Passo campate (m)</label>
+          <input id="campInt" type="number" min="0" step="0.01" />
+        </div>
+        <div class="col col-3">
+          <label for="len">Lunghezza (m)</label>
+          <input id="len" type="number" min="0" step="0.01" />
+          <small id="lenNote" class="help"></small>
+        </div>
+        <div class="col col-3">
+          <label for="wid">Larghezza (m)</label>
+          <input id="wid" type="number" min="0" step="0.01" />
+        </div>
       </div>
 
-      <!-- Campate, interasse, lunghezza, altezza -->
-      <div class="grid-4" style="margin-top:8px">
-        <label>N. campate
-          <input id="campN" type="number" step="1" min="0" value="0">
-        </label>
-        <label>Interasse campate (m)
-          <input id="campInt" type="number" step="0.01" min="0" value="0">
-          <span id="lenNote" class="small"></span>
-        </label>
-        <label>Lunghezza (m)
-          <input id="len" type="number" step="0.01" min="0">
-        </label>
-        <label>Altezza trave (m)
-          <input id="hTrave" type="number" step="0.01" min="0" value="0">
-        </label>
+      <div class="row">
+        <div class="col col-3">
+          <label for="hTrave">Altezza trave (m)</label>
+          <input id="hTrave" type="number" min="0" step="0.01" />
+        </div>
+        <div class="col col-3">
+          <label for="spTest">Sforo testata (m) — fronte/retro</label>
+          <input id="spTest" type="number" min="0" step="0.01" />
+        </div>
+        <div class="col col-3">
+          <label for="spGr">Sforo gronda (m) — sx/dx</label>
+          <input id="spGr" type="number" min="0" step="0.01" />
+        </div>
+        <div class="col col-3">
+          <label for="quo">Quota decubito (%)</label>
+          <input id="quo" type="number" min="0" max="100" step="1" />
+        </div>
       </div>
 
-      <!-- Larghezza e sporti unificati -->
-      <div class="grid-4" style="margin-top:8px">
-        <label>Larghezza (m)
-          <input id="wid" type="number" step="0.01" min="0">
-        </label>
-        <label>Sporto testata (m) — fronte/retro
-          <input id="spTest" type="number" step="0.01" min="0" value="0">
-        </label>
-        <label>Sporto gronda (m) — sx/dx
-          <input id="spGr" type="number" step="0.01" min="0" value="0">
-        </label>
-        <label></label>
+      <div class="row">
+        <div class="col col-12">
+          <label for="not">Note</label>
+          <textarea id="not" rows="2" placeholder="Annotazioni…"></textarea>
+        </div>
       </div>
 
-      <!-- Decubito -->
-      <div class="grid-4" style="margin-top:8px">
-        <label>Quota area di decubito (%)
-          <input id="quo" type="number" step="1" min="0" max="100">
-          <span class="small">
-            Percentuale dell’<b>area lorda interna</b> destinata alle aree di riposo/stallo (lettiera, box, cuccette).<br>
-            <b>Superficie di decubito</b> = Area lorda interna × Quota / 100.
-          </span>
-        </label>
-        <div></div><div></div><div></div>
+      <div class="row kpi">
+        <div class="col col-3"><strong>Area lorda (m²)</strong><div id="areaLorda">—</div></div>
+        <div class="col col-3"><strong>Copertura in pianta (m²)</strong><div id="areaCoperta">—</div></div>
+        <div class="col col-3"><strong>Copertura in falda (m²)</strong><div id="areaFalda">—</div></div>
+        <div class="col col-3"><strong>Area normativa richiesta (m²)</strong><div id="areaNormativa">—</div></div>
       </div>
 
-      <!-- Riepiloghi aree -->
-      <div class="grid-4" style="margin-top:12px">
-        <div class="card"><div class="small">Area lorda interna</div><div class="value"><span id="areaLorda">0.0</span> m²</div></div>
-        <div class="card"><div class="small">Copertura in pianta (sporti inclusi)</div><div class="value"><span id="areaCoperta">0.0</span> m²</div></div>
-        <div class="card"><div class="small">Copertura in falda</div><div class="value"><span id="areaFalda">0.0</span> m²</div></div>
-        <div class="card"><div class="small">Area normativa richiesta</div><div class="value"><span id="areaNormativa">0.0</span> m²</div></div>
+      <div class="row kpi">
+        <div class="col col-3"><strong>Costo base (€/)</strong><div id="costoMq">—</div></div>
+        <div class="col col-3"><strong>Costo acciaio (€/)</strong><div id="costoKg">—</div></div>
+        <div class="col col-3"><strong>Neve & vento</strong><div id="extraMeteo">—</div></div>
+        <div class="col col-3"><strong>Totale struttura (€/)</strong><div id="costoStruttura">—</div></div>
       </div>
-
-      <!-- Costi -->
-      <div class="grid-4" style="margin-top:12px">
-        <div class="card"><div class="small">Costo €/m² (tipo)</div><div class="value"><span id="costoMq">—</span></div></div>
-        <div class="card"><div class="small">Costo acciaio (€/kg variabile)</div><div class="value"><span id="costoKg">—</span></div></div>
-        <div class="card"><div class="small">Neve e vento</div><div class="value"><span id="extraMeteo">—</span></div></div>
-        <div class="card"><div class="small">Costo struttura</div><div class="value"><span id="costoStruttura">—</span></div></div>
-      </div>
-
-      <label style="margin-top:12px">Note
-        <input id="not" placeholder="Struttura metallica zincata, copertura sandwich 40 mm">
-      </label>
     </section>
 
-    <!-- POPOLAZIONI & STABULAZIONI -->
-    <section class="card" style="margin-top:12px">
-      <h2 style="color:var(--brand)">Popolazioni &amp; stabulazioni</h2>
+    <!-- Sezione POPOLAZIONI & STABULAZIONI -->
+    <section class="card">
+      <div class="card-title">
+        <h2>Popolazioni & stabulazioni</h2>
+      </div>
 
-      <div class="grid-2" style="margin-top:8px">
-        <div class="specie card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3>Bovine adulte</h3>
-            <span id="cap-bovineAdulte" class="badge">0 capi</span>
-          </div>
-          <div class="grid-2">
-            <label>N. capi <input id="n-bovineAdulte" type="number" min="0"></label>
-            <label>Stabulazione <select id="s-bovineAdulte"></select></label>
-            <label>Livello <select id="l-bovineAdulte"></select></label>
-          </div>
-          <div class="small">Valore unitario: <span id="vu-bovineAdulte">0.00</span> m²/capo</div>
+      <!-- RIGA 1 -->
+      <div class="row pop">
+        <div class="col col-3">
+          <label>Bovine adulte</label>
+          <input id="n-bovineAdulte" type="number" min="0" step="1" placeholder="N capi" />
+          <span id="cap-bovineAdulte" class="badge">0 capi</span>
         </div>
-
-        <div class="specie card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3>Manze bovine</h3>
-            <span id="cap-manzeBovine" class="badge">0 capi</span>
-          </div>
-          <div class="grid-2">
-            <label>N. capi <input id="n-manzeBovine" type="number" min="0"></label>
-            <label>Stabulazione <select id="s-manzeBovine"></select></label>
-            <label>Livello <select id="l-manzeBovine"></select></label>
-          </div>
-          <div class="small">Valore unitario: <span id="vu-manzeBovine">0.00</span> m²/capo</div>
+        <div class="col col-3">
+          <label>Stabulazione</label>
+          <select id="s-bovineAdulte"></select>
         </div>
-
-        <div class="specie card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3>Tori da rimonta</h3>
-            <span id="cap-toriRimonta" class="badge">0 capi</span>
-          </div>
-          <div class="grid-2">
-            <label>N. capi <input id="n-toriRimonta" type="number" min="0"></label>
-            <label>Stabulazione <select id="s-toriRimonta"></select></label>
-            <label>Livello <select id="l-toriRimonta"></select></label>
-          </div>
-          <div class="small">Valore unitario: <span id="vu-toriRimonta">0.00</span> m²/capo</div>
+        <div class="col col-3">
+          <label>Livello</label>
+          <select id="l-bovineAdulte"><option>Adeguato</option><option>Ottimale</option></select>
         </div>
-
-        <div class="specie card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3>Bufale adulte</h3>
-            <span id="cap-bufaleAdulte" class="badge">0 capi</span>
-          </div>
-          <div class="grid-2">
-            <label>N. capi <input id="n-bufaleAdulte" type="number" min="0"></label>
-            <label>Stabulazione <select id="s-bufaleAdulte"></select></label>
-            <label>Livello <select id="l-bufaleAdulte"></select></label>
-          </div>
-          <div class="small">Valore unitario: <span id="vu-bufaleAdulte">0.00</span> m²/capo</div>
-        </div>
-
-        <div class="specie card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3>Bufale al parto</h3>
-            <span id="cap-bufaleParto" class="badge">0 capi</span>
-          </div>
-          <div class="grid-2">
-            <label>N. capi <input id="n-bufaleParto" type="number" min="0"></label>
-            <label>Stabulazione <select id="s-bufaleParto"></select></label>
-            <label>Livello <select id="l-bufaleParto"></select></label>
-          </div>
-          <div class="small">Valore unitario: <span id="vu-bufaleParto">0.00</span> m²/capo</div>
-        </div>
-
-        <div class="specie card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3>Manze bufaline</h3>
-            <span id="cap-manzeBufaline" class="badge">0 capi</span>
-          </div>
-          <div class="grid-2">
-            <label>N. capi <input id="n-manzeBufaline" type="number" min="0"></label>
-            <label>Stabulazione <select id="s-manzeBufaline"></select></label>
-            <label>Livello <select id="l-manzeBufaline"></select></label>
-          </div>
-          <div class="small">Valore unitario: <span id="vu-manzebufaline">0.00</span> m²/capo</div>
+        <div class="col col-3 vu">
+          <label>m²/capo</label>
+          <div id="vu-bovineAdulte">—</div>
         </div>
       </div>
 
-      <div class="card" style="margin-top:12px">
-        <div class="toolbar" style="justify-content:space-between">
-          <h3>Bovini da ingrasso</h3>
+      <div class="row pop">
+        <div class="col col-3">
+          <label>Manze bovine</label>
+          <input id="n-manzeBovine" type="number" min="0" step="1" placeholder="N capi" />
+          <span id="cap-manzeBovine" class="badge">0 capi</span>
+        </div>
+        <div class="col col-3"><label>Stabulazione</label><select id="s-manzeBovine"></select></div>
+        <div class="col col-3"><label>Livello</label><select id="l-manzeBovine"><option>Adeguato</option><option>Ottimale</option></select></div>
+        <div class="col col-3 vu"><label>m²/capo</label><div id="vu-manzeBovine">—</div></div>
+      </div>
+
+      <div class="row pop">
+        <div class="col col-3">
+          <label>Tori rimonta</label>
+          <input id="n-toriRimonta" type="number" min="0" step="1" placeholder="N capi" />
+          <span id="cap-toriRimonta" class="badge">0 capi</span>
+        </div>
+        <div class="col col-3"><label>Stabulazione</label><select id="s-toriRimonta"></select></div>
+        <div class="col col-3"><label>Livello</label><select id="l-toriRimonta"><option>Adeguato</option><option>Ottimale</option></select></div>
+        <div class="col col-3 vu"><label>m²/capo</label><div id="vu-toriRimonta">—</div></div>
+      </div>
+
+      <!-- RIGA 2 -->
+      <div class="row pop">
+        <div class="col col-3">
+          <label>Bufale adulte</label>
+          <input id="n-bufaleAdulte" type="number" min="0" step="1" placeholder="N capi" />
+          <span id="cap-bufaleAdulte" class="badge">0 capi</span>
+        </div>
+        <div class="col col-3"><label>Stabulazione</label><select id="s-bufaleAdulte"></select></div>
+        <div class="col col-3"><label>Livello</label><select id="l-bufaleAdulte"><option>Adeguato</option><option>Ottimale</option></select></div>
+        <div class="col col-3 vu"><label>m²/capo</label><div id="vu-bufaleAdulte">—</div></div>
+      </div>
+
+      <div class="row pop">
+        <div class="col col-3">
+          <label>Bufale parto</label>
+          <input id="n-bufaleParto" type="number" min="0" step="1" placeholder="N capi" />
+          <span id="cap-bufaleParto" class="badge">0 capi</span>
+        </div>
+        <div class="col col-3"><label>Stabulazione</label><select id="s-bufaleParto"></select></div>
+        <div class="col col-3"><label>Livello</label><select id="l-bufaleParto"><option>Adeguato</option><option>Ottimale</option></select></div>
+        <div class="col col-3 vu"><label>m²/capo</label><div id="vu-bufaleParto">—</div></div>
+      </div>
+
+      <div class="row pop">
+        <div class="col col-3">
+          <label>Manze bufaline</label>
+          <input id="n-manzeBufaline" type="number" min="0" step="1" placeholder="N capi" />
+          <span id="cap-manzeBufaline" class="badge">0 capi</span>
+        </div>
+        <div class="col col-3"><label>Stabulazione</label><select id="s-manzeBufaline"></select></div>
+        <div class="col col-3"><label>Livello</label><select id="l-manzeBufaline"><option>Adeguato</option><option>Ottimale</option></select></div>
+        <div class="col col-3 vu"><label>m²/capo</label><div id="vu-manzebufaline">—</div></div>
+      </div>
+
+      <!-- INGRASSO -->
+      <div class="row pop">
+        <div class="col col-3">
+          <label>Ingrasso — gruppi</label>
+          <input id="ing-gr" type="number" min="0" step="1" placeholder="N gruppi" />
+        </div>
+        <div class="col col-3">
+          <label>Ingrasso — capi per gruppo</label>
+          <input id="ing-cpg" type="number" min="0" step="1" placeholder="Capi/gruppo" />
           <span id="cap-ingrasso" class="badge">0 capi</span>
         </div>
-        <div class="grid-4">
-          <label>N. gruppi <input id="ing-gr" type="number" min="0"></label>
-          <label>Capi per gruppo <input id="ing-cpg" type="number" min="0"></label>
-          <label>Peso medio (kg) <input id="ing-peso" type="number" min="0" value="550"></label>
-          <label>Livello
-            <select id="ing-liv"><option>Adeguato</option><option>Modesto</option><option>Ottimo</option></select>
-          </label>
+        <div class="col col-3">
+          <label>Peso medio (kg)</label>
+          <input id="ing-peso" type="number" min="200" step="10" value="550" />
         </div>
-        <div class="small" style="margin-top:6px">Valori unitari stimati: min 3.25 – adeg 4.25 – opt 5.25 m²/capo</div>
+        <div class="col col-3 vu">
+          <label>m²/capo (ingrasso)</label>
+          <div id="vu-ingrasso">—</div>
+        </div>
+      </div>
+
+      <div class="row pop">
+        <div class="col col-3">
+          <label>Stabulazione ingrasso</label>
+          <select id="ing-stab"></select>
+        </div>
+        <div class="col col-3">
+          <label>Livello ingrasso</label>
+          <select id="ing-liv"><option>Adeguato</option><option>Ottimale</option></select>
+        </div>
       </div>
     </section>
 
-    <div class="toolbar" style="margin-top:12px;justify-content:flex-end">
-      <button id="btn-next" class="btn" disabled>Prosegui alla pagina 2</button>
+    <div class="next-wrap">
+      <button id="btn-next" class="btn primary" disabled>Prosegui → Impianti</button>
     </div>
   </main>
 
-  <footer>© <span id="titleFooter"></span> per Grimaldelli s.r.l. — Manuel Zago</footer>
+  <footer class="footer">
+    <div class="footer-left">© <span id="titleFooter">BudgetBox</span> per Grimaldelli s.r.l. — Manuel Zago</div>
+  </footer>
 
-  <script src="./assets/js/core.js"></script>
+  <script src="assets/js/core.js" defer></script>
   <script>
-    document.documentElement.setAttribute("data-theme","light");
-    window.PreventivoApp.initPagina1();
+    window.addEventListener('DOMContentLoaded', function(){
+      if (window.PreventivoApp && typeof window.PreventivoApp.initPagina1 === 'function') {
+        try { window.PreventivoApp.initPagina1(); } catch (e) { alert("Errore init pagina: " + e.message); console.error(e); }
+      } else {
+        alert("Script non caricato correttamente. Controlla assets/js/core.js");
+      }
+    });
   </script>
 </body>
 </html>
