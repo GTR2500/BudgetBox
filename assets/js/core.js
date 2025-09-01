@@ -1,11 +1,39 @@
-/* BudgetBox – Pagina 1
-   Badge "X capi" verdi quando > 0. Altezza colmo calcolata, pendenza da TXT.
-   Rev: v0.1.7
+/* BudgetBox – Pagina 1 (core)
+   - Caricamento norme + forme + località
+   - Calcolo aree, pendenze, costi (€/mq + €/kg variabile + “neve & vento” %)
+   - Stabulazioni: opzioni per categoria da norme.json
+   - m²/capo: calcolo per categoria/ livello; ingrasso con interpolazione per peso
+   - Badge capi verdi se >0; check conformità
+   Rev: v0.2.0
 */
 (function (global) {
-  var APP_VERSION = "v0.1.7";
+  // ------------------------ Helpers base ------------------------
+  var APP_VERSION = "v0.2.0";
 
-  // ---------- STATO ----------
+  function num(v){ return Number(v||0); }
+  function fmt1(v){ return (Math.round(v*10)/10).toFixed(1); }
+  function fmt2(v){ return (Math.round(v*100)/100).toFixed(2); }
+  function byId(id){ return document.getElementById(id); }
+  function repoName(){
+    var seg=location.pathname.split("/").filter(Boolean);
+    return seg.length>=2?seg[1]:(seg[0]||"BudgetBox");
+  }
+
+  function fetchFirst(paths, asText){
+    var getter = asText ? function(r){ return r.text(); } : function(r){ return r.json(); };
+    var chain = Promise.reject();
+    paths.forEach(function(path){
+      chain = chain.catch(function(){
+        return fetch(path, {cache:"no-store"}).then(function(r){
+          if(!r.ok) throw new Error("HTTP "+r.status+" @ "+path);
+          return getter(r);
+        });
+      });
+    });
+    return chain;
+  }
+
+  // ------------------------ Stato ------------------------
   var state = {
     anagrafica: { cliente:"", localitaId:"", localita:"", riferimento:"", data: new Date().toISOString().slice(0,10) },
     cap: {
@@ -25,42 +53,21 @@
     },
     meteo: { neve_kgm2:0, vento_ms:0, alt_m:0, regione:"", provincia:"", istat:"", zonaSismica:"" },
     popolazioni: {
-      bovineAdulte:{ n:0, stab:"lettiera", livello:"Adeguato" },
-      manzeBovine:{ n:0, stab:"lettiera", livello:"Adeguato" },
-      toriRimonta:{ n:0, stab:"libera",   livello:"Adeguato" },
-      bufaleAdulte:{ n:0, stab:"lettiera", livello:"Adeguato" },
-      bufaleParto:{ n:0, stab:"lettiera", livello:"Adeguato" },
-      manzeBufaline:{ n:0, stab:"lettiera", livello:"Adeguato" },
-      ingrasso:{ gruppi:0, capiPerGruppo:0, peso:550, livello:"Adeguato" }
+      bovineAdulte:{ n:0, stab:"libera_lettiera", livello:"Adeguato" },
+      manzeBovine:{ n:0, stab:"libera_lettiera", livello:"Adeguato" },
+      toriRimonta:{ n:0, stab:"libera_lettiera", livello:"Adeguato" },
+      bufaleAdulte:{ n:0, stab:"libera_lettiera", livello:"Adeguato" },
+      bufaleParto:{ n:0, stab:"libera_lettiera", livello:"Adeguato" },
+      manzeBufaline:{ n:0, stab:"libera_lettiera", livello:"Adeguato" },
+      ingrasso:{ gruppi:0, capiPerGruppo:0, peso:550, livello:"Adeguato", stab:"libera_lettiera" }
     }
   };
+  global.__bbState = state; // opzionale per debug
 
   var norme = null;
   var localitaDB = [];
-  var FORME = []; // da TXT
-
-  // ---------- UTILS ----------
-  function num(v){ return Number(v||0); }
-  function fmt1(v){ return (Math.round(v*10)/10).toFixed(1); }
-  function fmt2(v){ return (Math.round(v*100)/100).toFixed(2); }
-  function byId(id){ return document.getElementById(id); }
-  function repoName(){ var seg=location.pathname.split("/").filter(Boolean); return seg.length>=2?seg[1]:(seg[0]||"BudgetBox"); }
-
-  function fetchFirst(paths, asText){
-    var getter = asText ? function(r){ return r.text(); } : function(r){ return r.json(); };
-    var chain = Promise.reject();
-    paths.forEach(function(path){
-      chain = chain.catch(function(){
-        return fetch(path, {cache:"no-store"}).then(function(r){
-          if(!r.ok) throw new Error("HTTP "+r.status+" @ "+path);
-          return getter(r);
-        });
-      });
-    });
-    return chain;
-  }
-
-  // ---------- PARSER LOCALITÀ ----------
+  var FORME_TXT = []; // eventuale txt
+  // ------------------------ Parser località (TXT) ------------------------
   function parseLocalitaTxt(txt){
     var lines = txt.split(/\r?\n/).map(function(l){return l.trim();})
       .filter(Boolean).filter(function(l){return !/^#|^\/\//.test(l);});
@@ -107,7 +114,7 @@
     return out.sort(function(a,b){ return a.nome.localeCompare(b.nome,"it"); });
   }
 
-  // ---------- PARSER FORME (TXT) ----------
+  // ------------------------ Parser forme (TXT) ------------------------
   function canonicalId(label){
     var s = (label||"").toLowerCase();
     if (s.indexOf("piano")>=0) return "piano";
@@ -143,7 +150,7 @@
     return out;
   }
 
-  // ---------- GEOMETRIA ----------
+  // ------------------------ Geometria & aree ------------------------
   function lengthFromCampate(){
     var n=num(state.cap.campN), p=num(state.cap.campInt);
     if(n>0 && p>0) return n*p; return num(state.cap.lunghezza);
@@ -157,12 +164,14 @@
   function areaCoperta(){ var d=covDims(); return d.Lcov * d.Wcov; }
 
   function estimatedSlopePct(){
-    var f = FORME.find(function(x){return x.id===state.cap.forma;});
-    if (!f) f = {minSlopePct:0, maxSlopePct:0};
+    // da forme: media min/max con lieve correzione su neve/vento
+    var forms = FORME_TXT.length ? FORME_TXT : (norme.forme_copertura||[]);
+    var f = forms.find(function(x){return x.id===state.cap.forma;}) || {minSlopePct:0, maxSlopePct:0};
     var min = num(f.minSlopePct), max = num(f.maxSlopePct);
     if (max < min) max = min;
     var base = (min + max) / 2;
-    var sc = norme.neve_vento_percent && norme.neve_vento_percent.scales || {};
+
+    var sc = (norme.neve_vento_percent && norme.neve_vento_percent.scales) || {};
     var neveN  = sc.neve  && sc.neve.max  ? Math.max(0, Math.min(1, num(state.meteo.neve_kgm2)/num(sc.neve.max)))   : 0;
     var ventoN = sc.vento && sc.vento.max ? Math.max(0, Math.min(1, num(state.meteo.vento_ms)/num(sc.vento.max))) : 0;
     var adj = (neveN - ventoN) * (max - min) * 0.25;
@@ -188,23 +197,93 @@
     return d.Lcov * d.Wcov * sec;
   }
 
-  // ---------- NORME POPOLAZIONI ----------
-  function ingrassoMqPerCapo(peso){
-    var arr = norme.ingrasso.mq_per_capo;
-    for (var i=0;i<arr.length;i++){ if(peso<=arr[i].maxPesoKg) return arr[i].mq; }
-    return arr[arr.length-1].mq;
-  }
-  function areaNormativaRichiesta(){
-    var u=norme.unitari_mq, p=state.popolazioni;
-    var base = num(p.bovineAdulte.n)*u.bovineAdulte + num(p.manzeBovine.n)*u.manzeBovine +
-               num(p.toriRimonta.n)*u.toriRimonta   + num(p.bufaleAdulte.n)*u.bufaleAdulte +
-               num(p.bufaleParto.n)*u.bufaleParto   + num(p.manzeBufaline.n)*u.manzebufaline;
-    var nIng = num(p.ingrasso.gruppi)*num(p.ingrasso.capiPerGruppo);
-    var mqIng = nIng*ingrassoMqPerCapo(num(p.ingrasso.peso));
-    return base + mqIng;
+  // ------------------------ Stabulazione: m²/capo dalle norme ------------------------
+  function interpIngrassoMq(tab, pesoKg, livello) {
+    if (!tab || !tab.length) return 0;
+    var byW = tab.slice().sort(function(a,b){return a.peso-b.peso;});
+    var w = num(pesoKg||0);
+    if (w <= byW[0].peso) {
+      var t0 = byW[0];
+      return livello === "Ottimale" ? t0.opt : (t0.min + t0.opt)/2;
+    }
+    if (w >= byW[byW.length-1].peso) {
+      var t1 = byW[byW.length-1];
+      return livello === "Ottimale" ? t1.opt : (t1.min + t1.opt)/2;
+    }
+    for (var i=0;i<byW.length-1;i++){
+      var a = byW[i], b = byW[i+1];
+      if (w >= a.peso && w <= b.peso){
+        var t = (w - a.peso) / (b.peso - a.peso);
+        var min = a.min + t*(b.min - a.min);
+        var opt = a.opt + t*(b.opt - a.opt);
+        return livello === "Ottimale" ? opt : (min + opt)/2;
+      }
+    }
+    return 0;
   }
 
-  // ---------- COSTI ----------
+  function mqPerCapoCategoria(cat, livello){
+    // ingrasso ha percorso dedicato
+    if (cat === "ingrasso"){
+      return interpIngrassoMq(norme.ingrasso_tabella, state.popolazioni.ingrasso.peso, livello);
+    }
+    // range da norme.stabulazioni.range_mq
+    var range = norme.stabulazioni && norme.stabulazioni.range_mq
+                ? norme.stabulazioni.range_mq[cat] : null;
+    if (range){
+      if (livello === "Ottimale") {
+        var optMin = num(range.ottimale_min);
+        if (optMin>0) return optMin + 0.5; // poco sopra la soglia
+        if (range.adeguato && range.adeguato.length===2) return num(range.adeguato[1]);
+      } else {
+        if (range.adeguato && range.adeguato.length===2) {
+          return (num(range.adeguato[0]) + num(range.adeguato[1]))/2;
+        }
+      }
+    }
+    // fallback: unitari_mq “storici”
+    return num((norme.unitari_mq||{})[cat]);
+  }
+
+  function labelIdFor(cat){
+    // nella tua pagina il label manzeBufaline è "vu-manzebufaline"
+    return (cat==="manzeBufaline") ? "vu-manzebufaline" : ("vu-"+cat);
+  }
+
+  function updateUnitariLabels(){
+    ["bovineAdulte","manzeBovine","toriRimonta","bufaleAdulte","bufaleParto","manzeBufaline"].forEach(function(cat){
+      var liv = state.popolazioni[cat].livello || "Adeguato";
+      var mq = mqPerCapoCategoria(cat, liv);
+      var el = byId(labelIdFor(cat));
+      if (el) el.textContent = isFinite(mq) && mq>0 ? (mq.toFixed(2)+" m²/capo") : "—";
+    });
+    // ingrasso: mostrato come range stimato in nota? qui aggiorniamo se hai un label dedicato
+    var lblIng = byId("vu-ingrasso");
+    if (lblIng){
+      var mqIng = mqPerCapoCategoria("ingrasso", state.popolazioni.ingrasso.livello||"Adeguato");
+      lblIng.textContent = isFinite(mqIng)&&mqIng>0 ? (mqIng.toFixed(2)+" m²/capo") : "—";
+    }
+  }
+
+  // ------------------------ Aree normative dinamiche ------------------------
+  function areaNormativaRichiesta(){
+    var p=state.popolazioni;
+    var base = 0;
+    ["bovineAdulte","manzeBovine","toriRimonta","bufaleAdulte","bufaleParto","manzeBufaline"].forEach(function(cat){
+      var n = num(p[cat].n);
+      if (!n) return;
+      var liv = p[cat].livello || "Adeguato";
+      var mq = mqPerCapoCategoria(cat, liv);
+      base += n * mq;
+    });
+    var nIng = num(p.ingrasso.gruppi)*num(p.ingrasso.capiPerGruppo);
+    if (nIng>0){
+      base += nIng * mqPerCapoCategoria("ingrasso", p.ingrasso.livello||"Adeguato");
+    }
+    return base;
+  }
+
+  // ------------------------ Costi ------------------------
   function eurPerKgByArea(A){
     var scale = (norme.euro_per_kg_scale||[]).slice().sort(function(a,b){ return a.minArea_m2-b.minArea_m2; });
     var v = 0;
@@ -240,6 +319,8 @@
     var extra = (base + costKg) * pct / 100;
     return { base: base, kg: costKg, extraPct: pct, extraEuro: extra, totale: base + costKg + extra };
   }
+
+  // ------------------------ Conformità ------------------------
   function conformita(){
     var req=areaNormativaRichiesta(), real=areaLorda()*num(state.cap.quotaDecubito)/100;
     if(req===0 && real===0) return {stato:"—", pct:100};
@@ -248,7 +329,7 @@
     return {stato:stato, pct: Math.round(ratio*100)};
   }
 
-  // ---------- SCHIZZO (compatto) ----------
+  // ------------------------ Sketch compatto ------------------------
   function sketch(forma){
     var c = "currentColor";
     if(forma==="piano"){
@@ -266,11 +347,10 @@
     return '<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 L60 28 L110 50" stroke="'+c+'" stroke-width="2" fill="none"/></svg>';
   }
 
-  // ---------- UI ----------
+  // ------------------------ UI utils ------------------------
   function updateLocBadge(){
     var badge = byId("badge-meteo"); if(!badge) return;
-    var id = state.anagrafica.localitaId;
-    var L = localitaDB.find(function(x){return x.id===id;});
+    var L = localitaDB.find(function(x){return x.id===state.anagrafica.localitaId;});
     if (!L){ badge.textContent="—"; badge.className="badge meta"; return; }
     var r1 = "ZONA_SISMICA: " + (L.zonaSismica||"—") +
              "; VENTO: " + fmt2(num(L.vento_ms)) + " m/s" +
@@ -283,7 +363,6 @@
     badge.className = "badge meta";
   }
 
-  // >>> qui la modifica: badge verde se val > 0
   function setCapBadge(id, val){
     var el = byId(id);
     if (!el) return;
@@ -292,8 +371,9 @@
     el.className = n > 0 ? "badge ok" : "badge";
   }
 
+  // ------------------------ Refresh principale ------------------------
   function refresh(){
-    // lunghezza da campate se presente
+    // lunghezza calcolata da campate se presenti
     var Lcalc = lengthFromCampate();
     var lenNote = byId("lenNote");
     if(lenNote){ lenNote.textContent = (num(state.cap.campN)>0 && num(state.cap.campInt)>0) ? ("L calcolata: "+fmt2(Lcalc)+" m") : ""; }
@@ -325,11 +405,11 @@
     var elEX  = byId("extraMeteo"); if(elEX) elEX.textContent = fmt2(CT.extraPct) + "% — " + CT.extraEuro.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
     var elCT  = byId("costoStruttura"); if(elCT) elCT.textContent = CT.totale.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
 
-    // campo Altezza colmo
+    // campo Altezza colmo (solo lettura)
     var hCol = byId("hColmoVal");
     if (hCol) hCol.value = fmt2(altezzaColmo());
 
-    // badge capi per ogni specie
+    // badge capi
     setCapBadge("cap-bovineAdulte", state.popolazioni.bovineAdulte.n);
     setCapBadge("cap-manzeBovine",  state.popolazioni.manzeBovine.n);
     setCapBadge("cap-toriRimonta",  state.popolazioni.toriRimonta.n);
@@ -339,15 +419,54 @@
     var nIng = num(state.popolazioni.ingrasso.gruppi)*num(state.popolazioni.ingrasso.capiPerGruppo);
     setCapBadge("cap-ingrasso", nIng);
 
+    // aggiornamento label m²/capo dinamici
+    if (norme) updateUnitariLabels();
+
+    // abilitazione bottone “prosegui”
     var ok = (state.anagrafica.cliente||"").trim().length>0 && num(state.cap.lunghezza)>0 && num(state.cap.larghezza)>0;
     var next = byId("btn-next"); if (next) next.disabled = !ok;
   }
 
+  // ------------------------ Stabulazioni UI (opzioni da norme) ------------------------
+  function populateStabulazioniFromNorme(){
+    if (!norme || !norme.stabulazioni || !norme.stabulazioni.opzioni) return;
+    var optsMap = norme.stabulazioni.opzioni;
+    function fillSelect(cat){
+      var sel = byId("s-"+cat);
+      if (!sel) return;
+      var list = optsMap[cat] || ["libera_lettiera","libera_cuccette","fissa_posta"];
+      sel.innerHTML = list.map(function(v){
+        var label = v.replace(/_/g," ").replace("libera","libera").replace("fissa","fissa");
+        return '<option value="'+v+'">'+label+'</option>';
+      }).join("");
+      if (state.popolazioni[cat].stab && list.indexOf(state.popolazioni[cat].stab)>=0){
+        sel.value = state.popolazioni[cat].stab;
+      } else {
+        state.popolazioni[cat].stab = list[0];
+        sel.value = list[0];
+      }
+    }
+    ["bovineAdulte","manzeBovine","toriRimonta","bufaleAdulte","bufaleParto","manzeBufaline"].forEach(fillSelect);
+
+    // ingrasso
+    var selIng = byId("ing-stab");
+    if (selIng){
+      var l = optsMap.ingrasso || ["libera_lettiera","grigliato"];
+      selIng.innerHTML = l.map(function(v){
+        var label = v.replace(/_/g," ");
+        return '<option value="'+v+'">'+label+'</option>';
+      }).join("");
+      if (l.indexOf(state.popolazioni.ingrasso.stab)>=0) selIng.value = state.popolazioni.ingrasso.stab;
+      else { state.popolazioni.ingrasso.stab = l[0]; selIng.value = l[0]; }
+    }
+  }
+
+  // ------------------------ Init principale ------------------------
   function loadFormeSelect(){
     var sel = byId("formaCopertura");
     var descr = byId("formaDescr");
     if (!sel) return;
-    var list = FORME.length ? FORME : (norme.forme_copertura||[]);
+    var list = FORME_TXT.length ? FORME_TXT : (norme.forme_copertura||[]);
     if (!list.length){ sel.innerHTML='<option value="bifalda">bifalda</option>'; }
     else sel.innerHTML = list.map(function(f){ return '<option value="'+f.id+'">'+(f.label||f.id)+'</option>'; }).join("");
 
@@ -369,7 +488,6 @@
     });
   }
 
-  // ---------- INIT ----------
   function initPagina1(){
     Promise.all([
       fetchFirst(["./assets/data/norme.json","assets/data/norme.json","/assets/data/norme.json"], false),
@@ -379,7 +497,7 @@
     .then(function(res){
       norme = res[0];
       localitaDB = parseLocalitaTxt(res[1]);
-      FORME = parseFormeTxt(res[2]);
+      FORME_TXT = parseFormeTxt(res[2]);
 
       // header
       var titleEl = byId("title"); if (titleEl) titleEl.textContent = repoName();
@@ -426,18 +544,17 @@
       }
       updateLocBadge();
 
-      // Forma copertura da TXT
-      loadFormeSelect();
-
-      // Tipo struttura (unico per ora)
+      // Tipo struttura (manteniamo solo acciaio per ora, ma lasciamo la select viva)
       var tipoSel = byId("tipoStruttura");
       if (tipoSel){
-        tipoSel.innerHTML = '<option value="acciaio_zincato">Struttura metallica zincata</option>';
+        var only = (norme.strutture||[]).filter(function(s){return s.id==="acciaio_zincato";});
+        var list = only.length?only:(norme.strutture||[]);
+        tipoSel.innerHTML = list.map(function(s){return '<option value="'+s.id+'">'+s.label+'</option>';}).join("");
         tipoSel.value = state.cap.tipoId;
       }
 
-      // Default da norme
-      var s0 = (norme.strutture||[])[0];
+      // Default da norme (prima struttura)
+      var s0 = (norme.strutture||[]).find(function(s){return s.id===state.cap.tipoId;}) || (norme.strutture||[])[0];
       if (s0){
         state.cap.prezzoMq = num(s0.prezzoMq||state.cap.prezzoMq);
         state.cap.kgBase   = num(s0.kg_per_mq_base||state.cap.kgBase);
@@ -464,30 +581,26 @@
       var quo = byId("quo"); if(quo){ quo.value=state.cap.quotaDecubito; quo.addEventListener("input", function(e){ state.cap.quotaDecubito=num(e.target.value); refresh(); }); }
       var not = byId("not"); if(not){ not.value=state.cap.note; not.addEventListener("input", function(e){ state.cap.note=e.target.value; }); }
 
-      // Popolazioni
+      // Forma copertura
+      loadFormeSelect();
+
+      // Popolazioni: opzioni stabulazione da norme
+      populateStabulazioniFromNorme();
+
+      // Popolazioni: wiring input/ select
       ["bovineAdulte","toriRimonta","bufaleParto","manzeBovine","bufaleAdulte","manzeBufaline"].forEach(function(k){
         var n = byId("n-"+k), s = byId("s-"+k), l = byId("l-"+k);
         if(n){ n.addEventListener("input", function(e){ state.popolazioni[k].n=num(e.target.value); refresh(); }); }
-        if(s){ s.innerHTML='<option value="lettiera">lettiera</option><option value="libera">libera</option>'; s.value=state.popolazioni[k].stab; s.addEventListener("change", function(e){ state.popolazioni[k].stab=e.target.value; }); }
-        if(l){ l.innerHTML='<option>Adeguato</option><option>Modesto</option><option>Ottimo</option>'; l.value=state.popolazioni[k].livello; l.addEventListener("change", function(e){ state.popolazioni[k].livello=e.target.value; }); }
+        if(s){ s.addEventListener("change", function(e){ state.popolazioni[k].stab=e.target.value; refresh(); }); }
+        if(l){ l.innerHTML='<option>Adeguato</option><option>Ottimale</option>'; l.value=state.popolazioni[k].livello; l.addEventListener("change", function(e){ state.popolazioni[k].livello=e.target.value; refresh(); }); }
       });
-      ["ing-gr","ing-cpg","ing-peso","ing-liv"].forEach(function(id){
-        var el=byId(id); if(!el) return;
-        if(id==="ing-liv"){ el.addEventListener("change", function(e){ state.popolazioni.ingrasso.livello=e.target.value; }); }
-        else { el.addEventListener("input", function(e){
-          var v=num(e.target.value);
-          if(id==="ing-gr") state.popolazioni.ingrasso.gruppi=v;
-          if(id==="ing-cpg") state.popolazioni.ingrasso.capiPerGruppo=v;
-          if(id==="ing-peso") state.popolazioni.ingrasso.peso=v;
-          refresh();
-        });}
-      });
-
-      // Valori unitari label
-      Object.keys(norme.unitari_mq||{}).forEach(function(k){
-        var idLbl = (k==="manzeBufaline") ? "vu-manzebufaline" : ("vu-"+k);
-        var el=byId(idLbl); if(el) el.textContent=(norme.unitari_mq[k]||0).toFixed(2);
-      });
+      // Ingrasso
+      var ingGr=byId("ing-gr"), ingCpg=byId("ing-cpg"), ingPeso=byId("ing-peso"), ingLiv=byId("ing-liv"), ingStab=byId("ing-stab");
+      if(ingGr)  ingGr.addEventListener("input", function(e){ state.popolazioni.ingrasso.gruppi=num(e.target.value); refresh(); });
+      if(ingCpg) ingCpg.addEventListener("input", function(e){ state.popolazioni.ingrasso.capiPerGruppo=num(e.target.value); refresh(); });
+      if(ingPeso)ingPeso.addEventListener("input", function(e){ state.popolazioni.ingrasso.peso=num(e.target.value); refresh(); });
+      if(ingLiv){ ingLiv.innerHTML='<option>Adeguato</option><option>Ottimale</option>'; ingLiv.value=state.popolazioni.ingrasso.livello; ingLiv.addEventListener("change", function(e){ state.popolazioni.ingrasso.livello=e.target.value; refresh(); }); }
+      if(ingStab) ingStab.addEventListener("change", function(e){ state.popolazioni.ingrasso.stab=e.target.value; refresh(); });
 
       // pulsanti
       var checkBtn = byId("checkBtn");
@@ -501,15 +614,16 @@
       });
 
       var tf = byId("titleFooter"); if (tf) tf.textContent = repoName();
-
-      // schizzo iniziale
       var sk  = byId("sketch"); if(sk){ sk.innerHTML = sketch(state.cap.forma); }
+
+      // prime label unitari
+      updateUnitariLabels();
 
       refresh();
     })
     .catch(function(err){ alert("Errore inizializzazione: "+err.message); });
   }
 
-  // ---------- EXPORT ----------
-  global.PreventivoApp = { initPagina1:initPagina1 };
+  // ------------------------ Export ------------------------
+  global.PreventivoApp = { initPagina1:initPagina1, refresh:refresh };
 })(window);
