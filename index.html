@@ -2,165 +2,327 @@
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  <title>BudgetBox — Preventivi Grimaldelli</title>
+  <title>Preventivi Grimaldelli — Pagina 1</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="preconnect" href="." />
-  <link rel="stylesheet" href="assets/css/app.css">
+  <link href="./assets/css/app.css" rel="stylesheet">
 </head>
 <body>
-  <!-- HEADER -->
-  <header class="bb-header">
-    <div class="bb-container bb-header__inner">
-      <div class="bb-brand">
-        <img id="company-logo" class="bb-logo-img" alt="Grimaldelli"
-             src="https://www.glcgrimaldelli.com/wp-content/uploads/2019/06/Logo-Sottopagine.jpg"
-             data-fallback="assets/img/grimaldelli-logo.jpg,assets/img/logo.png,public/img/grimaldelli-logo.jpg,public/img/logo.png,./public/img/grimaldelli-logo.jpg,/public/img/grimaldelli-logo.jpg" />
-        <div class="bb-brand__text"><h1 class="bb-appname">BudgetBox</h1></div>
-      </div>
-      <div class="bb-header__right">
-        <span class="bb-rev" id="bb-rev">Rev —</span>
-        <button id="btn-print" class="bb-btn">Stampa / PDF</button>
-        <button id="btn-settings" class="bb-btn bb-btn--ghost">Impostazioni</button>
-        <button id="btn-theme" class="bb-btn bb-btn--ghost" title="Tema">🌙</button>
-      </div>
+  <header>
+    <div class="container toolbar">
+      <h1 class="flex-1" style="flex:1">Preventivi Grimaldelli</h1>
+      <nav class="nav">
+        <a href="./index.html">1. Anagrafica</a>
+        <a class="dis" href="./impianti.html">2. Impianti</a>
+        <a class="dis" href="./accessori.html">3. Accessori</a>
+        <a class="dis" href="./riepilogo.html">4. Riepilogo</a>
+      </nav>
     </div>
   </header>
 
-  <main class="bb-container bb-main">
+  <main class="container" style="padding-bottom:60px">
     <!-- ANAGRAFICA -->
-    <section class="bb-card">
-      <div class="bb-card__title"><h2>Anagrafica</h2></div>
-      <div class="bb-meteo-row">
-        <span class="bb-meteo-label">Dati meteo:</span>
-        <span class="bb-pill">
-          <span id="meteo-pill-line1">—</span>
-          <span id="meteo-pill-line2" class="bb-pill-sub">—</span>
-        </span>
-      </div>
-      <div class="bb-grid bb-grid-4">
-        <label class="bb-field"><span>Cliente</span><input id="fld-cliente" type="text" placeholder="Ragione sociale"></label>
-        <label class="bb-field">
-          <span>Località</span>
-          <select id="fld-localita"><option value="">Seleziona una località…</option></select>
+    <section class="card">
+      <h2>Anagrafica</h2>
+      <div class="row">
+        <label>Cliente
+          <input id="cli" placeholder="Ragione sociale">
         </label>
-        <label class="bb-field"><span>Riferimento</span><input id="fld-rif" type="text" placeholder="Es. Rif. interno"></label>
-        <label class="bb-field"><span>Data</span><input id="fld-data" type="date"></label>
+        <label>Località
+          <input id="loc" placeholder="Comune (prov.)">
+        </label>
+        <label>Riferimento
+          <input id="rif" placeholder="Es. Rif. interno">
+        </label>
+        <label>Data
+          <input id="dat" type="date">
+        </label>
       </div>
     </section>
 
-    <!-- STRUTTURA -->
-    <section class="bb-card">
-      <div class="bb-card__title"><h2>Struttura</h2></div>
+    <!-- CAPANNONE -->
+    <section class="card" style="margin-top:12px">
+      <div class="toolbar" style="justify-content:space-between">
+        <h2>Capannone</h2>
+        <div class="small">Stato superficie:
+          <span id="badge" class="badge">—</span>
+        </div>
+      </div>
 
-      <div class="bb-grid bb-grid-5 bb-grid-gap">
-        <label class="bb-field">
-          <span>Tipo di struttura</span>
-          <input id="fld-tipo" type="text" value="Struttura Acciaio">
+      <div class="row" style="margin-top:8px">
+        <label>Lunghezza (m)
+          <input id="len" type="number" step="1" min="0">
         </label>
-
-        <label class="bb-field">
-          <span>Forma copertura</span>
-          <select id="fld-forma"><option value="">Seleziona…</option></select>
-          <small class="bb-hint" id="hint-forma">Pendenza rif.: —</small>
-          <small class="bb-hint" id="hint-forma-desc"></small>
+        <label>Larghezza (m)
+          <input id="wid" type="number" step="1" min="0">
         </label>
-
-        <label class="bb-field">
-          <span>Prezzo struttura (€/m²) — calcolato</span>
-          <input id="fld-prezzo" type="text" disabled placeholder="calcolo automatico">
-          <small class="bb-hint" id="hint-prezzo">€/kg × kg/m²</small>
+        <label>Quota area di decubito (%)
+          <input id="quo" type="number" step="1" min="0" max="100">
         </label>
-
-        <label class="bb-field">
-          <span>Kg acciaio (kg/m²) — calcolato (modificabile)</span>
-          <input id="fld-kgmq" type="number" inputmode="decimal" step="0.1" min="0" placeholder="kg/m²">
-          <small class="bb-hint" id="hint-kgmq">stima da scala campata/colonne</small>
-        </label>
-
-        <label class="bb-field">
-          <span>€/kg acciaio — da scala</span>
-          <input id="fld-eurokg" type="text" disabled placeholder="da scala">
-          <small class="bb-hint" id="hint-eurokg">scala euro_per_kg_scale.txt</small>
-        </label>
-
-        <label class="bb-field">
-          <span>N° campate — calcolato</span>
-          <input id="fld-campate" type="number" min="1" step="1" placeholder="—">
-        </label>
-
-        <label class="bb-field">
-          <span>Passo campate (m)</span>
-          <input id="fld-passo" type="number" inputmode="decimal" step="0.01" min="0" placeholder="m">
-        </label>
-
-        <label class="bb-field">
-          <span>Lunghezza (m)</span>
-          <input id="fld-lung" type="number" inputmode="decimal" step="0.01" min="0" placeholder="m">
-        </label>
-
-        <label class="bb-field">
-          <span>Larghezza (m)</span>
-          <input id="fld-larg" type="number" inputmode="decimal" step="0.01" min="0" placeholder="m">
-        </label>
-
-        <label class="bb-field">
-          <span>N° colonne (interne)</span>
-          <input id="fld-colonne" type="number" min="0" step="1" value="0">
-        </label>
-
-        <label class="bb-field">
-          <span>Altezza trave (m)</span>
-          <input id="fld-htrave" type="number" inputmode="decimal" step="0.01" min="0" placeholder="m">
-        </label>
-
-        <label class="bb-field">
-          <span>Altezza colmo (m) — calcolata</span>
-          <input id="fld-hcolmo" type="text" disabled placeholder="calcolata">
-        </label>
-
-        <label class="bb-field">
-          <span>Sforo testata (m) — fronte/retro</span>
-          <input id="fld-sforo-testata" type="number" inputmode="decimal" step="0.01" min="0" placeholder="m">
-        </label>
-
-        <label class="bb-field">
-          <span>Sforo gronda (m) — sx/dx</span>
-          <input id="fld-sforo-gronda" type="number" inputmode="decimal" step="0.01" min="0" placeholder="m">
-        </label>
-
-        <label class="bb-field">
-          <span>Quota decubito (%)</span>
-          <input id="fld-quota" type="number" inputmode="decimal" step="0.1" min="0" max="100" placeholder="%">
-        </label>
-
-        <label class="bb-field bb-field--note" style="grid-column:1 / -1">
-          <span>Note</span>
-          <textarea id="fld-note" rows="2" placeholder="Annotazioni…"></textarea>
+        <label>Prezzo struttura (€/m²)
+          <input id="prz" type="number" step="1" min="0">
         </label>
       </div>
 
-      <!-- KPI CALCOLI -->
-      <div class="bb-kpis bb-kpis--full">
-        <div class="bb-kpi"><div class="bb-kpi__label">Area lorda (m²)</div><div class="bb-kpi__value" id="kpi-area-lorda">0.00 m²</div></div>
-        <div class="bb-kpi"><div class="bb-kpi__label">Copertura in pianta (m²)</div><div class="bb-kpi__value" id="kpi-cop-pianta">0.00 m²</div></div>
-        <div class="bb-kpi"><div class="bb-kpi__label">Copertura in falda (m²)</div><div class="bb-kpi__value" id="kpi-cop-falda">0.00 m²</div></div>
-        <div class="bb-kpi"><div class="bb-kpi__label">Area normativa richiesta (m²)</div><div class="bb-kpi__value" id="kpi-area-normativa">0.00 m²</div></div>
-        <div class="bb-kpi"><div class="bb-kpi__label">Totale Kg</div><div class="bb-kpi__value" id="kpi-totkg">0 kg</div></div>
-        <div class="bb-kpi"><div class="bb-kpi__label">Costo base (€)</div><div class="bb-kpi__value" id="kpi-costo-base">0,00 €</div></div>
-        <div class="bb-kpi"><div class="bb-kpi__label">Neve & vento <small id="hint-meteo" class="bb-hint-inline"></small></div><div class="bb-kpi__value" id="kpi-costo-meteo">0,00 €</div></div>
-        <div class="bb-kpi"><div class="bb-kpi__label">Totale struttura (€)</div><div class="bb-kpi__value" id="kpi-totale">0,00 €</div></div>
+      <div class="row" style="margin-top:12px">
+        <div class="card">
+          <div class="small">Area lorda</div>
+          <div class="value"><span id="areaLorda">0.0</span> m²</div>
+        </div>
+        <div class="card">
+          <div class="small">Area decubito (reale)</div>
+          <div class="value"><span id="areaDecubito">0.0</span> m²</div>
+        </div>
+        <div class="card">
+          <div class="small">Area normativa richiesta</div>
+          <div class="value"><span id="areaNormativa">0.0</span> m²</div>
+        </div>
+      </div>
+
+      <label style="margin-top:12px">Note
+        <input id="not" placeholder="Note tecniche...">
+      </label>
+    </section>
+
+    <!-- POPOLAZIONI & STABULAZIONI -->
+    <section class="card" style="margin-top:12px">
+      <h2>Popolazioni & stabulazioni</h2>
+
+      <div class="row" style="margin-top:8px">
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3>Bovine adulte</h3><div class="small"><span id="cnt-bovineAdulte">0</span> capi</div>
+          </div>
+          <div class="row">
+            <label>N. capi <input id="n-bovineAdulte" type="number" min="0"></label>
+            <label>Stabulazione
+              <select id="s-bovineAdulte"></select>
+            </label>
+          </div>
+          <div class="small" style="margin-top:4px">Valore unitario: 6.50 m²/capo</div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3>Manze bovine</h3><div class="small"><span id="cnt-manzeBovine">0</span> capi</div>
+          </div>
+          <div class="row">
+            <label>N. capi <input id="n-manzeBovine" type="number" min="0"></label>
+            <label>Stabulazione
+              <select id="s-manzeBovine"></select>
+            </label>
+          </div>
+          <div class="small" style="margin-top:4px">Valore unitario: 3.80 m²/capo</div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3>Tori da rimonta</h3><div class="small"><span id="cnt-toriRimonta">0</span> capi</div>
+          </div>
+          <div class="row">
+            <label>N. capi <input id="n-toriRimonta" type="number" min="0"></label>
+            <label>Stabulazione
+              <select id="s-toriRimonta"></select>
+            </label>
+          </div>
+          <div class="small" style="margin-top:4px">Valore unitario: 9.50 m²/capo</div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3>Bufale adulte</h3><div class="small"><span id="cnt-bufaleAdulte">0</span> capi</div>
+          </div>
+          <div class="row">
+            <label>N. capi <input id="n-bufaleAdulte" type="number" min="0"></label>
+            <label>Stabulazione
+              <select id="s-bufaleAdulte"></select>
+            </label>
+          </div>
+          <div class="small" style="margin-top:4px">Valore unitario: 6.00 m²/capo</div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3>Bufale al parto</h3><div class="small"><span id="cnt-bufaleParto">0</span> capi</div>
+          </div>
+          <div class="row">
+            <label>N. capi <input id="n-bufaleParto" type="number" min="0"></label>
+            <label>Stabulazione
+              <select id="s-bufaleParto"></select>
+            </label>
+          </div>
+          <div class="small" style="margin-top:4px">Valore unitario: 7.50 m²/capo</div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3>Manze bufaline</h3><div class="small"><span id="cnt-manzeBufaline">0</span> capi</div>
+          </div>
+          <div class="row">
+            <label>N. capi <input id="n-manzeBufaline" type="number" min="0"></label>
+            <label>Stabulazione
+              <select id="s-manzeBufaline"></select>
+            </label>
+          </div>
+          <div class="small" style="margin-top:4px">Valore unitario: 3.50 m²/capo</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h3>Bovini da ingrasso</h3>
+        <div class="row">
+          <label>N. gruppi <input id="ing-gr" type="number" min="0"></label>
+          <label>Capi per gruppo <input id="ing-cpg" type="number" min="0"></label>
+          <label>Peso medio (kg) <input id="ing-peso" type="number" min="0"></label>
+          <label>Livello
+            <select id="ing-liv">
+              <option>Adeguato</option>
+              <option>Modesto</option>
+              <option>Ottimo</option>
+            </select>
+          </label>
+        </div>
+        <div class="small" style="margin-top:6px">Valori unitari stimati: min 3.25 – adeg 4.25 – opt 5.25 m²/capo</div>
       </div>
     </section>
 
-    <!-- POPOLAZIONI & STABULAZIONI (invariata) -->
-    <section class="bb-card">
-      <div class="bb-card__title"><h2>Popolazioni & stabulazioni</h2></div>
-      <!-- … la sezione resta quella che avevi già, non toccata … -->
-      <div class="bb-hint">Sezione ripristinata e non modificata in questo aggiornamento.</div>
-    </section>
+    <div class="toolbar" style="margin-top:12px;justify-content:flex-end">
+      <a class="nav" href="./impianti.html"><button id="btn-next" disabled>Prosegui alla pagina 2</button></a>
+    </div>
   </main>
 
-  <footer class="bb-footer bb-container"><small>© BudgetBox per Grimaldelli s.r.l. — Manuel Zago</small></footer>
-  <script src="assets/js/core.js"></script>
+  <script type="module">
+    import { loadDataset, loadState, saveState, areaLorda, areaDecubitoReale, areaNormativaRichiesta, conformita, costoStruttura, fmt1, num } from "./assets/js/state.js";
+
+    const stabulazioniSelectIds = [
+      "s-bovineAdulte","s-manzeBovine","s-toriRimonta","s-bufaleAdulte","s-bufaleParto","s-manzeBufaline"
+    ];
+    const countSpans = {
+      bovineAdulte: document.getElementById("cnt-bovineAdulte"),
+      manzeBovine: document.getElementById("cnt-manzeBovine"),
+      toriRimonta: document.getElementById("cnt-toriRimonta"),
+      bufaleAdulte: document.getElementById("cnt-bufaleAdulte"),
+      bufaleParto: document.getElementById("cnt-bufaleParto"),
+      manzeBufaline: document.getElementById("cnt-manzeBufaline")
+    };
+
+    const el = {
+      cli:  document.getElementById("cli"),
+      loc:  document.getElementById("loc"),
+      rif:  document.getElementById("rif"),
+      dat:  document.getElementById("dat"),
+      len:  document.getElementById("len"),
+      wid:  document.getElementById("wid"),
+      quo:  document.getElementById("quo"),
+      prz:  document.getElementById("prz"),
+      not:  document.getElementById("not"),
+      badge: document.getElementById("badge"),
+      areaLorda: document.getElementById("areaLorda"),
+      areaDecubito: document.getElementById("areaDecubito"),
+      areaNormativa: document.getElementById("areaNormativa"),
+      n: {
+        bovineAdulte: document.getElementById("n-bovineAdulte"),
+        manzeBovine: document.getElementById("n-manzeBovine"),
+        toriRimonta: document.getElementById("n-toriRimonta"),
+        bufaleAdulte: document.getElementById("n-bufaleAdulte"),
+        bufaleParto: document.getElementById("n-bufaleParto"),
+        manzeBufaline: document.getElementById("n-manzeBufaline")
+      },
+      s: {
+        bovineAdulte: document.getElementById("s-bovineAdulte"),
+        manzeBovine: document.getElementById("s-manzeBovine"),
+        toriRimonta: document.getElementById("s-toriRimonta"),
+        bufaleAdulte: document.getElementById("s-bufaleAdulte"),
+        bufaleParto: document.getElementById("s-bufaleParto"),
+        manzeBufaline: document.getElementById("s-manzeBufaline")
+      },
+      ing: {
+        gr: document.getElementById("ing-gr"),
+        cpg: document.getElementById("ing-cpg"),
+        peso: document.getElementById("ing-peso"),
+        liv: document.getElementById("ing-liv")
+      },
+      next: document.getElementById("btn-next")
+    };
+
+    const state = loadState();
+    const norme = await loadDataset();
+
+    // Popola select stabulazioni
+    for (const id of stabulazioniSelectIds) {
+      const s = document.getElementById(id);
+      s.innerHTML = norme.stabulazioni.map(v=>`<option value="${v}">${v}</option>`).join("");
+    }
+
+    // Inizializza UI con stato
+    el.cli.value = state.anagrafica.cliente;
+    el.loc.value = state.anagrafica.localita;
+    el.rif.value = state.anagrafica.riferimento;
+    el.dat.value = state.anagrafica.data;
+
+    el.len.value = state.capannone.lunghezza;
+    el.wid.value = state.capannone.larghezza;
+    el.quo.value = state.capannone.quotaDecubito;
+    el.prz.value = state.capannone.prezzoMq;
+    el.not.value = state.capannone.note;
+
+    for (const k of Object.keys(el.n)){
+      el.n[k].value = state.popolazioni[k].n;
+      el.s[k].value = state.popolazioni[k].stab;
+      countSpans[k].textContent = state.popolazioni[k].n || 0;
+    }
+    el.ing.gr.value   = state.popolazioni.ingrasso.gruppi;
+    el.ing.cpg.value  = state.popolazioni.ingrasso.capiPerGruppo;
+    el.ing.peso.value = state.popolazioni.ingrasso.peso;
+    el.ing.liv.value  = state.popolazioni.ingrasso.livello;
+
+    // Listeners
+    const setAndSave = (path, value)=>{
+      const seg = path.split(".");
+      let obj = state;
+      while (seg.length>1){ obj = obj[seg.shift()]; }
+      obj[seg[0]] = value;
+      saveState(state);
+      refresh();
+    };
+
+    el.cli.addEventListener("input", e=>setAndSave("anagrafica.cliente", e.target.value));
+    el.loc.addEventListener("input", e=>setAndSave("anagrafica.localita", e.target.value));
+    el.rif.addEventListener("input", e=>setAndSave("anagrafica.riferimento", e.target.value));
+    el.dat.addEventListener("input", e=>setAndSave("anagrafica.data", e.target.value));
+
+    el.len.addEventListener("input", e=>setAndSave("capannone.lunghezza", num(e.target.value)));
+    el.wid.addEventListener("input", e=>setAndSave("capannone.larghezza", num(e.target.value)));
+    el.quo.addEventListener("input", e=>setAndSave("capannone.quotaDecubito", num(e.target.value)));
+    el.prz.addEventListener("input", e=>setAndSave("capannone.prezzoMq", num(e.target.value)));
+    el.not.addEventListener("input", e=>setAndSave("capannone.note", e.target.value));
+
+    for (const k of Object.keys(el.n)){
+      el.n[k].addEventListener("input", e=>{
+        setAndSave(`popolazioni.${k}.n`, num(e.target.value));
+        countSpans[k].textContent = e.target.value || 0;
+      });
+      el.s[k].addEventListener("change", e=>setAndSave(`popolazioni.${k}.stab`, e.target.value));
+    }
+    el.ing.gr.addEventListener("input",  e=>setAndSave("popolazioni.ingrasso.gruppi", num(e.target.value)));
+    el.ing.cpg.addEventListener("input", e=>setAndSave("popolazioni.ingrasso.capiPerGruppo", num(e.target.value)));
+    el.ing.peso.addEventListener("input",e=>setAndSave("popolazioni.ingrasso.peso", num(e.target.value)));
+    el.ing.liv.addEventListener("change",e=>setAndSave("popolazioni.ingrasso.livello", e.target.value));
+
+    // Refresh derivati
+    function refresh(){
+      el.areaLorda.textContent    = fmt1(areaLorda(state));
+      el.areaDecubito.textContent = fmt1(areaDecubitoReale(state));
+      el.areaNormativa.textContent= fmt1(areaNormativaRichiesta(state, norme));
+
+      const cf = conformita(state, norme);
+      el.badge.textContent = cf.stato;
+      el.badge.className = "badge " + (cf.stato==="Adeguato"?"ok":cf.stato==="Conforme"?"mid":cf.stato==="Non conforme"?"ko":"");
+
+      // Abilita "Prosegui" se anagrafica + dimensioni ok
+      const okBase = state.anagrafica.cliente.trim().length>0 && num(state.capannone.lunghezza)>0 && num(state.capannone.larghezza)>0;
+      el.next.disabled = !okBase;
+    }
+    refresh();
+  </script>
 </body>
 </html>

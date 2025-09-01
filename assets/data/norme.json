@@ -9,96 +9,10 @@
   },
   "ingrasso": {
     "mq_per_capo": [
-      { "maxPesoKg": 400, "mq": 3.25, "label": "min" },
-      { "maxPesoKg": 550, "mq": 4.25, "label": "adeg" },
-      { "maxPesoKg": 700, "mq": 5.25, "label": "opt" }
+      { "maxPesoKg": 325, "mq": 3.25, "label": "min" },
+      { "maxPesoKg": 425, "mq": 4.25, "label": "adeg" },
+      { "maxPesoKg": 99999, "mq": 5.25, "label": "opt" }
     ]
   },
-  "meteo": {
-    "neve_eur_per_kgm2": 0,
-    "vento_eur_per_ms": 0,
-    "snow_mu_reduction_per_slope_pct": 0.0,
-    "snow_mu_min": 0.0,
-    "snow_mu_max": 1.0
-  },
-  "strutture": [
-    { "id": "acciaio_zincato", "label": "Struttura metallica zincata", "forma": "bifalda", "prezzoMq": 180, "kg_per_mq_base": 34 },
-    { "id": "prefabbricato_ca", "label": "Prefabbricato in c.a.",         "forma": "piano",   "prezzoMq": 0,   "kg_per_mq_base": 0  },
-    { "id": "legno_lamellare",  "label": "Legno lamellare",               "forma": "bifalda", "prezzoMq": 0,   "kg_per_mq_base": 0  },
-    { "id": "mista",            "label": "Struttura mista",               "forma": "bifalda", "prezzoMq": 0,   "kg_per_mq_base": 0  }
-  ],
-  "euro_per_kg_scale": [
-    { "minArea_m2": 0,    "eurPerKg": 8.0 },
-    { "minArea_m2": 100,  "eurPerKg": 7.0 },
-    { "minArea_m2": 200,  "eurPerKg": 6.5 },
-    { "minArea_m2": 400,  "eurPerKg": 6.0 },
-    { "minArea_m2": 600,  "eurPerKg": 5.5 },
-    { "minArea_m2": 800,  "eurPerKg": 5.0 },
-    { "minArea_m2": 1000, "eurPerKg": 4.5 },
-    { "minArea_m2": 1500, "eurPerKg": 3.5 },
-    { "minArea_m2": 2000, "eurPerKg": 2.9 }
-  ],
-  "vento": {
-    "buckets": { "altezza_m": [3, 6], "passo_m": [4.5] },
-    "sovrapprezzo": {
-      "bifalda_H1_P1": 0, "bifalda_H1_P2": 0, "bifalda_H2_P1": 0, "bifalda_H2_P2": 0, "bifalda_H3_P1": 0, "bifalda_H3_P2": 0,
-      "monofalda_H1_P1": 0, "monofalda_H1_P2": 0, "monofalda_H2_P1": 0, "monofalda_H2_P2": 0, "monofalda_H3_P1": 0, "monofalda_H3_P2": 0,
-      "piano_H1_P1": 0, "piano_H1_P2": 0, "piano_H2_P1": 0, "piano_H2_P2": 0, "piano_H3_P1": 0, "piano_H3_P2": 0,
-      "default": 0
-    }
-  },
-  "servizi_fissi": [
-    { "descrizione": "Relazione di calcolo strutturale firmata da un tecnico abilitato comprensiva di disegni esecutivi", "um": "Nr", "qta": 1, "prezzo": 1950.0, "stato": "a_prezzo", "conteggia": true },
-    { "descrizione": "Direzione lavori per la carpenteria metallica.", "um": "—", "qta": 1, "prezzo": 0, "stato": "inclusa", "conteggia": false },
-    { "descrizione": "Calcolo plinti di fondazioni e disegni esecutivi", "um": "Nr", "qta": 1, "prezzo": 1500.0, "stato": "a_prezzo", "conteggia": true },
-    { "descrizione": "Direzione lavori opere in c.a.", "um": "—", "qta": 1, "prezzo": 0, "stato": "inclusa", "conteggia": false },
-    { "descrizione": "Prove dei materiali", "um": "—", "qta": 1, "prezzo": 0, "stato": "escluse", "conteggia": false }
-  ],
-  "stabulazioni": {
-    "opzioni": {
-      "bovineAdulte": ["libera_lettiera", "libera_cuccette", "fissa_posta"],
-      "manzeBovine":  ["libera_lettiera", "libera_cuccette", "fissa_posta"],
-      "toriRimonta":  ["libera_lettiera", "libera_cuccette", "fissa_posta"],
-      "bufaleAdulte": ["libera_lettiera", "libera_cuccette", "fissa_posta"],
-      "bufaleParto":  ["libera_lettiera", "libera_cuccette", "fissa_posta"],
-      "manzeBufaline":["libera_lettiera", "libera_cuccette", "fissa_posta"],
-      "ingrasso":     ["libera_lettiera", "grigliato"]
-    },
-    "range_mq": {
-      "bovineAdulte": { "adeguato": [6.0, 7.0],  "ottimale_min": 7.0 },
-      "manzeBovine":  { "adeguato": [3.5, 4.0],  "ottimale_min": 4.0 },
-      "toriRimonta":  { "adeguato": [9.0, 10.0], "ottimale_min": 10.0 },
-      "bufaleAdulte": { "adeguato": [5.0, 7.0],  "ottimale_min": 7.0 },
-      "bufaleParto":  { "adeguato": [7.0, 8.0],  "ottimale_min": 8.0 },
-      "manzeBufaline":{"adeguato": [2.5, 4.0],  "ottimale_min": 4.0 }
-    }
-  },
-  "ingrasso_tabella": [
-    { "peso": 400,  "min": 2.5, "opt": 4.5 },
-    { "peso": 500,  "min": 3.0, "opt": 5.0 },
-    { "peso": 600,  "min": 3.5, "opt": 5.5 },
-    { "peso": 700,  "min": 4.0, "opt": 6.0 },
-    { "peso": 800,  "min": 4.5, "opt": 6.5 },
-    { "peso": 900,  "min": 5.0, "opt": 7.0 },
-    { "peso": 1000, "min": 5.5, "opt": 7.5 }
-  ],
-  "forme_copertura": [
-    { "id": "piano",      "label": "Tetto piano",          "minSlopePct": 1,  "maxSlopePct": 3,  "descr": "Orizzontale con pendenze minime per drenaggio." },
-    { "id": "monofalda",  "label": "Monofalda (shed)",     "minSlopePct": 8,  "maxSlopePct": 15, "descr": "Falda unica inclinata, asimmetrica; ideale per tettoie." },
-    { "id": "bifalda",    "label": "Bifalda / a capanna",  "minSlopePct": 10, "maxSlopePct": 25, "descr": "Due faldoni simmetrici verso il colmo centrale." },
-    { "id": "dente_sega", "label": "Dente di sega",        "minSlopePct": 15, "maxSlopePct": 35, "descr": "Profili alternati inclinato/verticale (sawtooth)." },
-    { "id": "cattedrale", "label": "Capriate a vista",     "minSlopePct": 15, "maxSlopePct": 35, "descr": "Struttura a capriate con falde simmetriche." }
-  ],
-  "neve_vento_percent": {
-    "min_pct": 3,
-    "max_pct": 15,
-    "weights": { "neve": 0.34, "vento": 0.34, "altitudine": 0.20, "sismica": 0.10, "forma_bonus": 0.02 },
-    "scales": {
-      "neve": { "max": 500 },
-      "vento": { "max": 50 },
-      "altitudine": { "max": 2500 },
-      "sismica": { "map": { "1": 1.0, "2": 0.7, "3": 0.4, "4": 0.2, "": 0.0 } }
-    },
-    "forma_bonus": { "bifalda": 0.05, "monofalda": 0.00, "piano": -0.03, "dente_sega": 0.04, "cattedrale": 0.05 }
-  }
+  "stabulazioni": ["lettiera", "libera"]
 }
