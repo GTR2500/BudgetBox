@@ -61,8 +61,7 @@ body{
 .bb-main{padding:22px 0 42px}
 .bb-card{
   background:var(--panel);
-  /* Bordo arancione richiesto */
-  border:1px solid var(--accent);
+  border:1px solid var(--accent); /* bordo arancione */
   border-radius:var(--radius);
   box-shadow:var(--shadow);
   padding:18px; margin:16px 0
@@ -74,12 +73,8 @@ body{
 .bb-meteo-row{display:flex;align-items:center;gap:10px;margin:2px 0 12px}
 .bb-meteo-label{font-size:13px;color:var(--muted)}
 .bb-pill{
-  display:inline-flex;
-  flex-direction:column;           /* due righe dentro la stessa pill */
-  align-items:flex-start;
-  gap:2px;
-  padding:6px 10px;border-radius:999px;
-  background:#e6f0ff;border:1px solid #cfe0ff;color:#0f3270;
+  display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;
+  padding:6px 10px;border-radius:999px;background:#e6f0ff;border:1px solid #cfe0ff;color:#0f3270;
   font-size:13px;line-height:1.2
 }
 .bb-pill-sub{opacity:.8;font-size:12px}
@@ -90,8 +85,7 @@ body{
 .bb-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .bb-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .bb-grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
-bb-grid-5{grid-template-columns:1.3fr 1.3fr 1.3fr 1.3fr 1fr}
-.bb-grid-5{grid-template-columns:1.3fr 1.3fr 1.3fr 1.3fr 1fr}
+.bb-grid-5{grid-template-columns:1.2fr 1.2fr 1.2fr 1.2fr 1.2fr}
 @media (max-width:1100px){.bb-grid-5{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:820px){.bb-grid-4,.bb-grid-3,.bb-grid-5{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.bb-grid-4,.bb-grid-3,.bb-grid-5,.bb-grid-2{grid-template-columns:1fr}}
@@ -100,14 +94,14 @@ bb-grid-5{grid-template-columns:1.3fr 1.3fr 1.3fr 1.3fr 1fr}
 .bb-field{display:grid;gap:6px}
 .bb-field>span{font-size:12px;color:var(--muted)}
 .bb-field input, .bb-field select{
-  width:100%;
-  background:var(--panel-2);color:var(--text);
-  border:1px solid var(--border);border-radius:10px;
-  padding:10px 12px; outline:none
+  width:100%;background:var(--panel-2);color:var(--text);
+  border:1px solid var(--border);border-radius:10px;padding:10px 12px; outline:none
 }
 .bb-field--note input{background:#fafbff}
+.bb-hint{font-size:12px;color:var(--muted);margin-top:6px}
+.bb-hint-inline{font-weight:400;color:var(--muted);margin-left:6px}
 
-/* Stato superficie */
+/* Stato superficie (lasciato com'era) */
 .bb-state{
   display:grid;grid-template-rows:auto auto auto;gap:6px;
   align-content:start;padding:8px 10px;border:1px dashed var(--border);
@@ -116,35 +110,20 @@ bb-grid-5{grid-template-columns:1.3fr 1.3fr 1.3fr 1.3fr 1fr}
 .bb-state__label{font-size:12px;color:var(--muted)}
 .bb-state__value{display:flex;align-items:center;gap:8px}
 .bb-state__pct{color:var(--muted)}
-.bb-chip{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:6px 10px;border-radius:999px;border:1px solid transparent;font-size:13px
-}
+.bb-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid transparent;font-size:13px}
 .bb-chip--green{background:#e7f8ea;color:#0e6b25;border-color:#c9efcf}
 .bb-chip--yellow{background:#fff7e5;color:#6a4a00;border-color:#ffe7b4}
+(bb-chip--red); /* guard */
 .bb-chip--red{background:#ffe9ea;color:#7d1017;border-color:#ffc9cd}
 
 /* KPI strip */
-.bb-kpis{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:12px;margin:14px 0
-}
-@media (max-width:820px){.bb-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:560px){.bb-kpis{grid-template-columns:1fr}}
-.bb-kpi{
-  background:var(--panel-2);border:1px solid var(--border);border-radius:12px;
-  padding:12px
-}
+.bb-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
+.bb-kpis--full{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1100px){.bb-kpis--full{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.bb-kpis--full{grid-template-columns:1fr}}
+.bb-kpi{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:12px}
 .bb-kpi__label{font-size:12px;color:var(--muted)}
 .bb-kpi__value{font-weight:700;margin-top:4px}
-
-/* Popolazioni */
-.bb-box{
-  border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--panel-2)
-}
-.bb-box__title{font-weight:700;margin-bottom:10px}
-.bb-hint{font-size:12px;color:var(--muted);margin-top:6px}
-.bb-box--wide{grid-column:1/-1}
 
 /* Footer */
 .bb-footer{padding:24px 0 42px;color:var(--muted);text-align:center;border-top:1px solid var(--border)}
