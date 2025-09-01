@@ -1,0 +1,20 @@
+# Stima kg acciaio per m² in funzione della campata trasversale (apertura efficace)
+# campata_trasversale = larghezza / (N_colonne + 1)
+# Formato:
+#   CAMPATA_MAX_M ; KGMQ
+# Le righe vanno in ordine crescente di CAMPATA_MAX_M: si usa la prima riga in cui
+# campata_trasversale <= CAMPATA_MAX_M.
+# Valori finali sempre clampati tra 25 e 45 kg/m².
+
+6;25
+8;28
+10;32
+12;36
+14;40
+99;45
+
+# Coefficienti (opzionali) per piccoli aggiustamenti morbidi:
+#   coeff; ALFA_H; H0; BETA_L; L0
+#   + ALFA_H * max(0, altezza_trave - H0)
+#   + BETA_L * max(0, larghezza - L0)
+coeff;0.8;4.0;0.2;18.0
