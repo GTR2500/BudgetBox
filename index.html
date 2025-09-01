@@ -12,7 +12,12 @@
   <header class="bb-header">
     <div class="bb-container bb-header__inner">
       <div class="bb-brand">
-        <div class="bb-logo" aria-hidden="true"></div>
+        <!-- Logo aziendale: URL primario + fallback multipli -->
+        <img id="company-logo"
+             class="bb-logo-img"
+             alt="Grimaldelli"
+             src="https://www.glcgrimaldelli.com/wp-content/uploads/2019/06/Logo-Sottopagine.jpg"
+             data-fallback="assets/img/grimaldelli-logo.jpg,assets/img/logo.png,public/img/grimaldelli-logo.jpg,public/img/logo.png,./public/img/grimaldelli-logo.jpg,/public/img/grimaldelli-logo.jpg" />
         <div class="bb-brand__text">
           <h1 class="bb-appname">BudgetBox</h1>
         </div>
@@ -34,10 +39,13 @@
         <h2>Anagrafica</h2>
       </div>
 
-      <!-- Riga "Dati meteo: [pill]" come nello screenshot -->
+      <!-- "Dati meteo:" con pill a due righe -->
       <div class="bb-meteo-row">
         <span class="bb-meteo-label">Dati meteo:</span>
-        <span id="meteo-pill" class="bb-pill">—</span>
+        <span class="bb-pill">
+          <span id="meteo-pill-line1">—</span>
+          <span id="meteo-pill-line2" class="bb-pill-sub">—</span>
+        </span>
       </div>
 
       <div class="bb-grid bb-grid-4">
@@ -65,7 +73,7 @@
       </div>
     </section>
 
-    <!-- STRUTTURA -->
+    <!-- STRUTTURA (layout originale) -->
     <section class="bb-card">
       <div class="bb-card__title">
         <h2>Struttura</h2>
@@ -127,7 +135,7 @@
       </label>
     </section>
 
-    <!-- POPOLAZIONI & STABULAZIONI -->
+    <!-- POPOLAZIONI & STABULAZIONI (layout originale) -->
     <section class="bb-card">
       <div class="bb-card__title">
         <h2>Popolazioni & stabulazioni</h2>
@@ -161,7 +169,7 @@
           <div class="bb-hint">Valore unitario: <span data-key="bovAdulte.vu">—</span> m²/capo</div>
         </div>
 
-        <!-- Tori di rimonta -->
+        <!-- Tori da rimonta -->
         <div class="bb-box">
           <div class="bb-box__title">Tori da rimonta</div>
           <div class="bb-grid bb-grid-3">
