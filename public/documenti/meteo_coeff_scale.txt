@@ -1,0 +1,30 @@
+# Scala percentuale per costo meteo (neve/vento/altitudine)
+# Formato:
+# ALT_MIN;ALT_MAX;NEVE_MIN;NEVE_MAX;VENTO_MIN;VENTO_MAX;PERC
+# - Lasciare vuote le colonne non rilevanti (wildcard).
+# - Se più righe combaciano, si applica la percentuale più ALTA.
+# - Valori d'esempio 5%–25% (modificabili liberamente).
+
+# Altitudine (m)
+0;199;;;;;0.05
+200;399;;;;;0.08
+400;599;;;;;0.12
+600;799;;;;;0.15
+800;999;;;;;0.20
+1000;99999;;;;;0.25
+
+# Carico neve (kg/m²)
+;;0;79;;;0.05
+;;80;119;;;0.08
+;;120;159;;;0.12
+;;160;199;;;0.15
+;;200;239;;;0.20
+;;240;999;;;0.25
+
+# Vento (m/s) — opzionale, meno pesante
+;;;;0;19;0.05
+;;;;20;24;0.08
+;;;;25;29;0.12
+;;;;30;34;0.15
+;;;;35;39;0.20
+;;;;40;99;0.25
