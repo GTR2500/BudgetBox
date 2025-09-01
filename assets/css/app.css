@@ -89,7 +89,6 @@ body{
 .bb-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .bb-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .bb-grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
-bb-grid-5{grid-template-columns:1.3fr 1.3fr 1.3fr 1.3fr 1fr}
 .bb-grid-5{grid-template-columns:1.3fr 1.3fr 1.3fr 1.3fr 1fr}
 @media (max-width:1100px){.bb-grid-5{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:820px){.bb-grid-4,.bb-grid-3,.bb-grid-5{grid-template-columns:repeat(2,minmax(0,1fr))}}
