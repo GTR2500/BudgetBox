@@ -1,0 +1,2 @@
+id;label;forma;prezzoMq;kg_per_mq_base
+acciaio_zincato;Struttura metallica zincata;bifalda;180;34
