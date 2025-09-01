@@ -1,11 +1,9 @@
 /* BudgetBox – Core TXT
-   Tutti i dati da /public/documenti/*.txt (niente JSON nel codice)
-   - Carica: località, forme, strutture, €/kg scale, stabulazioni, range, ingrasso tabella, servizi, % neve/vento
-   - Popola menu, calcola m²/capo dinamici, aree, altezza colmo, costi e badge
-   Rev: v0.3.1 (bugfix manzeBufaline + bootstrap guard)
+   Tutti i dati da /public/documenti/*.txt
+   Rev: v0.3.2
 */
 (function (global) {
-  var APP_VERSION = "v0.3.1";
+  var APP_VERSION = "v0.3.2";
 
   // ------------------------ Helpers ------------------------
   function num(v){ return Number((v||"").toString().replace(",", ".")) || 0; }
@@ -14,9 +12,9 @@
   function byId(id){ return document.getElementById(id); }
   function repoName(){ var seg=location.pathname.split("/").filter(Boolean); return seg.length>=2?seg[1]:(seg[0]||"BudgetBox"); }
 
-  function fetchTxt(pathVariants){
+  function fetchTxt(paths){
     var chain = Promise.reject();
-    pathVariants.forEach(function(p){
+    paths.forEach(function(p){
       chain = chain.catch(function(){
         return fetch(p, {cache:"no-store"}).then(function(r){
           if(!r.ok) throw new Error("HTTP "+r.status+" @ "+p);
@@ -40,7 +38,7 @@
     var lines = splitNonEmptyLines(txt); if(!lines.length) return [];
     var delim = detectDelim(lines[0]);
     var head = lines[0].split(delim).map(function(s){return s.trim().toUpperCase();});
-    var idx = function(name){ var i=head.indexOf(name); return i<0?null:i; };
+    function idx(name){ var i=head.indexOf(name); return i<0?null:i; }
     var iReg=idx("REGIONE"), iProv=idx("PROV_CITTA_METROPOLITANA"), iSig=idx("SIGLA_PROV"),
         iCom=idx("COMUNE"), iIstat=idx("COD_ISTAT_COMUNE"), iSism=idx("ZONA_SISMICA"),
         iV=idx("VENTO"), iN=idx("CARICO_NEVE"), iQ=idx("ALTITUDINE");
@@ -92,7 +90,7 @@
     return out;
   }
 
-  function parseKVTable(txt){ // group;key;subkey;value
+  function parseKVTable(txt){
     var lines = splitNonEmptyLines(txt); if(!lines.length) return {};
     var delim = detectDelim(lines[0]);
     var head = lines[0].split(delim).map(function(s){return s.trim().toLowerCase();});
@@ -280,7 +278,7 @@
   }
   function altezzaColmo(){
     var d = covDims(), W = d.Wcov;
-    var slope = estimatedSlopePct(); // %
+    var slope = estimatedSlopePct();
     var rise = (state.cap.forma==="monofalda" || state.cap.forma==="piano") ? (W * slope / 100) : ((W/2)*slope/100);
     return num(state.cap.hTrave) + rise;
   }
@@ -405,19 +403,24 @@
     el.textContent=n+" capi"; el.className = n>0 ? "badge ok" : "badge";
   }
 
-  function updateUnitariUISelects(){
-    // Opzioni stabulazione da DATA.stabulazioni.opzioni
+  function populateStabulazioniSelects(){
     function fill(cat){
-      var sel=byId("s-"+cat); if(!sel) return; var list=DATA.stabulazioni.opzioni[cat]||["libera_lettiera","libera_cuccette","fissa_posta"];
+      var sel=byId("s-"+cat); if(!sel) return;
+      var list=DATA.stabulazioni.opzioni[cat]||["libera_lettiera","libera_cuccette","fissa_posta"];
       sel.innerHTML=list.map(function(v){return '<option value="'+v+'">'+v.replace(/_/g," ")+'</option>';}).join("");
       if (list.indexOf(state.popolazioni[cat].stab)>=0) sel.value=state.popolazioni[cat].stab; else { state.popolazioni[cat].stab=list[0]; sel.value=list[0]; }
     }
     ["bovineAdulte","manzeBovine","toriRimonta","bufaleAdulte","bufaleParto","manzeBufaline"].forEach(fill);
-    var selIng=byId("ing-stab"); if(selIng){ var L=DATA.stabulazioni.opzioni.ingrasso||["libera_lettiera","grigliato"]; selIng.innerHTML=L.map(function(v){return '<option value="'+v+'">'+v.replace(/_/g," ")+'</option>';}).join(""); if(L.indexOf(state.popolazioni.ingrasso.stab)>=0) selIng.value=state.popolazioni.ingrasso.stab; else {state.popolazioni.ingrasso.stab=L[0]; selIng.value=L[0];} }
+    var selIng=byId("ing-stab");
+    if(selIng){
+      var L=DATA.stabulazioni.opzioni.ingrasso||["libera_lettiera","grigliato"];
+      selIng.innerHTML=L.map(function(v){return '<option value="'+v+'">'+v.replace(/_/g," ")+'</option>';}).join("");
+      if(L.indexOf(state.popolazioni.ingrasso.stab)>=0) selIng.value=state.popolazioni.ingrasso.stab; else {state.popolazioni.ingrasso.stab=L[0]; selIng.value=L[0];}
+    }
   }
 
   function refresh(){
-    // lunghezza da campate se presenti
+    // Lunghezza da campate
     var Lcalc=lengthFromCampate();
     var lenNote=byId("lenNote");
     if(lenNote){ lenNote.textContent=(num(state.cap.campN)>0 && num(state.cap.campInt)>0)?("L calcolata: "+fmt2(Lcalc)+" m"):""; }
@@ -440,7 +443,7 @@
 
     var hCol=byId("hColmoVal"); if(hCol) hCol.value=fmt2(altezzaColmo());
 
-    // badge capi (FIX typo manzeBufaline)
+    // Badge capi
     setCapBadge("cap-bovineAdulte", state.popolazioni.bovineAdulte.n);
     setCapBadge("cap-manzeBovine",  state.popolazioni.manzeBovine.n);
     setCapBadge("cap-toriRimonta",  state.popolazioni.toriRimonta.n);
@@ -466,22 +469,16 @@
     sel.value=state.cap.forma;
     if(descr){ var cur=list.find(function(x){return x.id===state.cap.forma;}); descr.textContent=cur && cur.descr?cur.descr:""; }
     var sk=byId("sketch"); if(sk){ sk.innerHTML=sketch(state.cap.forma); }
-    sel.addEventListener("change",function(){ state.cap.forma=sel.value; var cur=list.find(function(x){return x.id===state.cap.forma;}); if(descr) descr.textContent=cur && cur.descr?cur.descr:""; var sk=byId("sketch"); if(sk){ sk.innerHTML=sketch(state.cap.forma); } refresh(); });
-  }
-
-  function updateUnitariUISelects(){
-    // Opzioni stabulazione da DATA.stabulazioni.opzioni
-    function fill(cat){
-      var sel=byId("s-"+cat); if(!sel) return; var list=DATA.stabulazioni.opzioni[cat]||["libera_lettiera","libera_cuccette","fissa_posta"];
-      sel.innerHTML=list.map(function(v){return '<option value="'+v+'">'+v.replace(/_/g," ")+'</option>';}).join("");
-      if (list.indexOf(state.popolazioni[cat].stab)>=0) sel.value=state.popolazioni[cat].stab; else { state.popolazioni[cat].stab=list[0]; sel.value=list[0]; }
-    }
-    ["bovineAdulte","manzeBovine","toriRimonta","bufaleAdulte","bufaleParto","manzeBufaline"].forEach(fill);
-    var selIng=byId("ing-stab"); if(selIng){ var L=DATA.stabulazioni.opzioni.ingrasso||["libera_lettiera","grigliato"]; selIng.innerHTML=L.map(function(v){return '<option value="'+v+'">'+v.replace(/_/g," ")+'</option>';}).join(""); if(L.indexOf(state.popolazioni.ingrasso.stab)>=0) selIng.value=state.popolazioni.ingrasso.stab; else {state.popolazioni.ingrasso.stab=L[0]; selIng.value=L[0];} }
+    sel.addEventListener("change",function(){
+      state.cap.forma=sel.value;
+      var cur=list.find(function(x){return x.id===state.cap.forma;});
+      if(descr) descr.textContent=cur && cur.descr?cur.descr:"";
+      var sk=byId("sketch"); if(sk){ sk.innerHTML=sketch(state.cap.forma); }
+      refresh();
+    });
   }
 
   function initPagina1(){
-    // carica tutti i TXT
     Promise.all([
       fetchTxt(["public/documenti/C-S-A-maggio-2025.txt","./public/documenti/C-S-A-maggio-2025.txt","/public/documenti/C-S-A-maggio-2025.txt"]),
       fetchTxt(["public/documenti/forme-coperture.txt","./public/documenti/forme-coperture.txt","/public/documenti/forme-coperture.txt"]),
@@ -495,7 +492,7 @@
       fetchTxt(["public/documenti/neve_vento_percent.txt","./public/documenti/neve_vento_percent.txt","/public/documenti/neve_vento_percent.txt"])
     ])
     .then(function(txts){
-      // costruisci DATA
+      // parse
       var localitaTxt   = txts[0];
       var formeTxt      = txts[1];
       var struttureTxt  = txts[2];
@@ -507,7 +504,6 @@
       var serviziTxt    = txts[8];
       var neveVentoTxt  = txts[9];
 
-      // parse
       localitaDB                 = parseLocalitaTxt(localitaTxt);
       DATA.forme_copertura       = parseFormeTxt(formeTxt);
       DATA.strutture             = parseStrutture(struttureTxt);
@@ -519,7 +515,7 @@
       DATA.servizi_fissi         = parseServizi(serviziTxt);
       DATA.neve_vento_percent    = parseKVTable(neveVentoTxt);
 
-      // Header & comandi
+      // Header
       var titleEl=byId("title"); if(titleEl) titleEl.textContent=repoName();
       var revDate=byId("revDate"); if(revDate) revDate.textContent=new Date().toLocaleDateString("it-IT");
       var revVer=byId("revVer"); if(revVer) revVer.textContent=APP_VERSION;
@@ -567,7 +563,6 @@
           var cur=list.find(function(s){return s.id===state.cap.tipoId;});
           if (cur){ state.cap.prezzoMq=num(cur.prezzoMq); state.cap.kgBase=num(cur.kg_per_mq_base); state.cap.forma=cur.forma||state.cap.forma; loadFormeSelect(); refresh(); }
         });
-        // init con prima struttura
         var s0=list.find(function(s){return s.id===state.cap.tipoId;}) || list[0];
         state.cap.prezzoMq = num(s0.prezzoMq||state.cap.prezzoMq);
         state.cap.kgBase   = num(s0.kg_per_mq_base||state.cap.kgBase);
@@ -582,7 +577,12 @@
       // Input struttura
       ["campN","campInt","len","hTrave"].forEach(function(id){
         var el=byId(id); if(!el) return; el.addEventListener("input", function(e){
-          var v=num(e.target.value); if(id==="campN") state.cap.campN=v; if(id==="campInt") state.cap.campInt=v; if(id==="len") state.cap.lunghezza=v; if(id==="hTrave") state.cap.hTrave=v; refresh();
+          var v=num(e.target.value);
+          if(id==="campN") state.cap.campN=v;
+          if(id==="campInt") state.cap.campInt=v;
+          if(id==="len") state.cap.lunghezza=v;
+          if(id==="hTrave") state.cap.hTrave=v;
+          refresh();
         });
       });
       ["wid","spTest","spGr"].forEach(function(id){
@@ -592,20 +592,20 @@
       var not=byId("not"); if(not){ not.value=state.cap.note; not.addEventListener("input", function(e){ state.cap.note=e.target.value; }); }
 
       // Stabulazioni – popola menu
-      updateUnitariUISelects();
+      populateStabulazioniSelects();
 
       // Wiring Popolazioni
       ["bovineAdulte","toriRimonta","bufaleParto","manzeBovine","bufaleAdulte","manzeBufaline"].forEach(function(k){
         var n=byId("n-"+k), s=byId("s-"+k), l=byId("l-"+k);
         if(n){ n.addEventListener("input", function(e){ state.popolazioni[k].n=num(e.target.value); refresh(); }); }
         if(s){ s.addEventListener("change", function(e){ state.popolazioni[k].stab=e.target.value; refresh(); }); }
-        if(l){ l.innerHTML='<option>Adeguato</option><option>Ottimale</option>'; l.value=state.popolazioni[k].livello; l.addEventListener("change", function(e){ state.popolazioni[k].livello=e.target.value; refresh(); }); }
+        if(l){ l.addEventListener("change", function(e){ state.popolazioni[k].livello=e.target.value; refresh(); }); }
       });
       var ingGr=byId("ing-gr"), ingCpg=byId("ing-cpg"), ingPeso=byId("ing-peso"), ingLiv=byId("ing-liv"), ingStab=byId("ing-stab");
       if(ingGr) ingGr.addEventListener("input", function(e){ state.popolazioni.ingrasso.gruppi=num(e.target.value); refresh(); });
       if(ingCpg) ingCpg.addEventListener("input", function(e){ state.popolazioni.ingrasso.capiPerGruppo=num(e.target.value); refresh(); });
       if(ingPeso) ingPeso.addEventListener("input", function(e){ state.popolazioni.ingrasso.peso=num(e.target.value); refresh(); });
-      if(ingLiv){ ingLiv.innerHTML='<option>Adeguato</option><option>Ottimale</option>'; ingLiv.value=state.popolazioni.ingrasso.livello; ingLiv.addEventListener("change", function(e){ state.popolazioni.ingrasso.livello=e.target.value; refresh(); }); }
+      if(ingLiv) ingLiv.addEventListener("change", function(e){ state.popolazioni.ingrasso.livello=e.target.value; refresh(); });
       if(ingStab) ingStab.addEventListener("change", function(e){ state.popolazioni.ingrasso.stab=e.target.value; refresh(); });
 
       // Pulsanti
