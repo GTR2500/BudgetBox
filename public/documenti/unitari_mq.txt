@@ -1,0 +1,7 @@
+categoria;mq
+bovineAdulte;6.5
+manzeBovine;3.8
+toriRimonta;9.5
+bufaleAdulte;6.0
+bufaleParto;7.5
+manzeBufaline;3.5
