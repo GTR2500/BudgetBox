@@ -137,3 +137,6 @@ footer{
 
 /* ====== UTILITA’ VISIVE ====== */
 hr{border:none;border-top:1px solid var(--line);margin:12px 0}
+
+.badge.ok { background: #16a34a; color: #fff; }
+
