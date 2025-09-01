@@ -1,4 +1,4 @@
-// ==== BudgetBox core (meteo: Zona SISMICA in riga 2, layout invariato) ====
+// ==== BudgetBox core (meteo riga 2 con Zona SISMICA, layout invariato) ====
 (function () {
   'use strict';
 
