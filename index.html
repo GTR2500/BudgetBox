@@ -5,426 +5,318 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BudgetBox</title>
   <link rel="stylesheet" href="assets/css/app.css" />
-  <style>
-    /* piccoli aiuti se mancano classi nel tuo app.css */
-    .page { max-width: 1200px; margin: 0 auto; padding: 16px; }
-    header { display:flex; align-items:center; gap:12px; }
-    header .grow { flex:1; }
-    .toolbar { display:flex; gap:8px; align-items:center; }
-    .section { border:2px solid #f59e0b; border-radius:12px; padding:16px; margin:16px 0; background:var(--card, #fff); }
-    .section h2 { color:#f59e0b; margin:0 0 12px 0; }
-    .grid { display:grid; grid-template-columns: repeat(12, 1fr); gap:12px; }
-    .col-3{grid-column:span 3;} .col-4{grid-column:span 4;} .col-6{grid-column:span 6;}
-    .col-8{grid-column:span 8;} .col-12{grid-column:span 12;}
-    .field label{ display:block; font-size:.9rem; margin-bottom:4px; opacity:.8;}
-    .field input, .field select, .field textarea{
-      width:100%; padding:10px 12px; border-radius:10px; border:1px solid #cbd5e1; background:var(--input,#eef2f7);
-    }
-    .row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .badge{ display:inline-block; padding:6px 10px; border-radius:999px; background:#e5e7eb; color:#111; font-size:.85rem;}
-    .badge.ok{ background:#d1fae5; color:#065f46; }
-    .badge.mid{ background:#fef3c7; color:#92400e; }
-    .badge.ko{ background:#fee2e2; color:#991b1b; }
-    .badge.meta{ background:#e0f2fe; color:#075985; }
-    .kpi { background: #fff7ed; border:1px dashed #fdba74; padding:12px; border-radius:10px; }
-    .kpi .label{font-size:.8rem; opacity:.7;}
-    .kpi .value{ font-weight:600; }
-    .right { text-align:right; }
-    footer { margin:32px 0 16px; text-align:right; opacity:.7; font-size:.9rem; }
-    .hint { font-size:.85rem; opacity:.8; }
-    .tiny-note { font-size:.85rem; opacity:.75; }
-    .sketch { height:60px; display:flex; align-items:center; justify-content:center; opacity:.8; }
-    .btn { padding:10px 14px; border-radius:10px; border:1px solid #cbd5e1; background:#fff; cursor:pointer; }
-    .btn.primary { background:#f59e0b; color:white; border-color:#f59e0b; }
-  </style>
 </head>
 <body>
   <div class="page">
     <!-- HEADER -->
-    <header class="row">
-      <img src="https://www.glcgrimaldelli.com/wp-content/uploads/2019/06/Logo-Sottopagine.jpg" alt="Grimaldelli" style="height:32px;border-radius:6px" />
-      <h1 id="title" class="grow" style="margin:0">BudgetBox</h1>
-      <div class="badge">Rev <span id="revDate">—</span> • <span id="revVer">—</span></div>
-      <div class="toolbar">
-        <button id="themeBtn" class="btn" title="Tema">🌙</button>
+    <header class="header">
+      <div class="header-left">
+        <img class="logo" src="https://www.glcgrimaldelli.com/wp-content/uploads/2019/06/Logo-Sottopagine.jpg" alt="Grimaldelli" />
+        <h1 id="title">BudgetBox</h1>
+      </div>
+      <div class="header-right">
+        <span class="rev badge">Rev <span id="revDate">—</span> • <span id="revVer">—</span></span>
         <button id="printBtn" class="btn">Stampa / PDF</button>
+        <a href="impostazioni.html" class="btn ghost">Impostazioni</a>
+        <button id="themeBtn" class="btn ghost" title="Tema">🌙</button>
       </div>
     </header>
 
     <!-- ANAGRAFICA -->
     <section class="section">
-      <h2>Anagrafica</h2>
+      <div class="section-title">Anagrafica</div>
 
-      <div class="row" style="margin-bottom:8px">
-        <div id="badge-meteo" class="badge meta">—</div>
+      <div class="row">
+        <label class="field col-12">
+          <div class="lbl">Dati meteo:</div>
+          <div id="badge-meteo" class="badge meta"></div>
+        </label>
       </div>
 
-      <div class="grid">
-        <div class="col-4 field">
-          <label>Cliente</label>
+      <div class="row">
+        <label class="field col-4">
+          <div class="lbl">Cliente</div>
           <input id="cli" type="text" placeholder="Ragione sociale / nominativo" />
-        </div>
+        </label>
 
-        <div class="col-4 field">
-          <label>Località</label>
+        <label class="field col-4">
+          <div class="lbl">Località</div>
           <select id="fld-localita">
             <option value="">— Seleziona località —</option>
           </select>
-        </div>
+        </label>
 
-        <div class="col-2 field">
-          <label>Riferimento</label>
+        <label class="field col-2">
+          <div class="lbl">Riferimento</div>
           <input id="rif" type="text" placeholder="Rif. interno" />
-        </div>
+        </label>
 
-        <div class="col-2 field">
-          <label>Data</label>
+        <label class="field col-2">
+          <div class="lbl">Data</div>
           <input id="dat" type="date" />
-        </div>
+        </label>
       </div>
     </section>
 
-    <!-- STRUTTURA -->
+    <!-- STRUTTURA (versione semplice “stamattina”) -->
     <section class="section">
-      <div class="row" style="justify-content:space-between; align-items:center;">
-        <h2>Struttura</h2>
-        <div class="row">
+      <div class="section-title with-tools">
+        <span>Struttura</span>
+        <div class="tools">
           <span id="badge" class="badge">—</span>
-          <span id="badgePct" class="tiny-note">(0%)</span>
-          <button id="checkBtn" class="btn">Check superficie</button>
+          <span id="badgePct" class="pct">(0%)</span>
+          <button id="checkBtn" class="btn ghost">Check superficie</button>
         </div>
       </div>
 
-      <div class="grid">
-        <div class="col-3 field">
-          <label>Tipo di struttura</label>
-          <select id="tipoStruttura"></select>
-        </div>
+      <div class="row">
+        <label class="field col-3">
+          <div class="lbl">Lunghezza (m)</div>
+          <input id="len" type="number" step="0.01" value="60" />
+        </label>
+        <label class="field col-3">
+          <div class="lbl">Larghezza (m)</div>
+          <input id="wid" type="number" step="0.01" value="25" />
+        </label>
+        <label class="field col-3">
+          <div class="lbl">Quota area di decubito (%)</div>
+          <input id="quo" type="number" step="1" value="70" />
+        </label>
+        <label class="field col-3">
+          <div class="lbl">Prezzo struttura (€/m²)</div>
+          <input id="prz_m2" type="number" step="0.01" value="180" />
+        </label>
+      </div>
 
-        <div class="col-3 field">
-          <label>Forma copertura</label>
-          <select id="formaCopertura"></select>
-          <div id="formaDescr" class="hint"></div>
+      <div class="row kpis">
+        <div class="kpi col-3">
+          <div class="kpi-lbl">Area lorda</div>
+          <div class="kpi-val"><span id="areaLorda">—</span> m²</div>
         </div>
-
-        <div class="col-3 field">
-          <label>Prezzo struttura (€/m²)</label>
-          <input id="prz" type="number" step="0.01" />
-          <div class="tiny-note">Caricato dal tipo; modificabile a mano.</div>
+        <div class="kpi col-3">
+          <div class="kpi-lbl">Area decubito (reale)</div>
+          <div class="kpi-val"><span id="areaDecubito">—</span> m²</div>
         </div>
-
-        <div class="col-3 field">
-          <label>Kg acciaio (kg/m²)</label>
-          <input id="kgBase" type="number" step="0.01" />
-          <div class="tiny-note">Riferimento per il calcolo €/kg variabile.</div>
+        <div class="kpi col-3">
+          <div class="kpi-lbl">Area normativa richiesta</div>
+          <div class="kpi-val"><span id="areaNormativa">—</span> m²</div>
+        </div>
+        <div class="kpi col-3">
+          <div class="kpi-lbl">Costo struttura</div>
+          <div class="kpi-val"><span id="costoStruttura">—</span></div>
         </div>
       </div>
 
-      <div id="sketch" class="sketch">Rappresentazione schematica della copertura selezionata (indicativa).</div>
-
-      <div class="grid">
-        <div class="col-2 field">
-          <label>N° campate</label>
-          <input id="campN" type="number" step="1" />
-        </div>
-        <div class="col-2 field">
-          <label>Interasse campate (m)</label>
-          <input id="campInt" type="number" step="0.01" />
-          <div id="lenNote" class="tiny-note">L calcolata: —</div>
-        </div>
-        <div class="col-2 field">
-          <label>Lunghezza (m)</label>
-          <input id="len" type="number" step="0.01" />
-        </div>
-        <div class="col-2 field">
-          <label>Larghezza (m)</label>
-          <input id="wid" type="number" step="0.01" />
-        </div>
-        <div class="col-2 field">
-          <label>Altezza trave (m)</label>
-          <input id="hTrave" type="number" step="0.01" />
-        </div>
-        <div class="col-2 field">
-          <label>Altezza colmo (m) — calcolata</label>
-          <input id="hColmoVal" type="number" step="0.01" readonly />
-        </div>
-
-        <div class="col-2 field">
-          <label>Sporto testata (m) — fronte/retro</label>
-          <input id="spTest" type="number" step="0.01" />
-        </div>
-        <div class="col-2 field">
-          <label>Sporto gronda (m) — sx/dx</label>
-          <input id="spGr" type="number" step="0.01" />
-        </div>
-        <div class="col-2 field">
-          <label>Quota decubito (%)</label>
-          <input id="quo" type="number" step="1" />
-        </div>
-
-        <div class="col-12 field">
-          <label>Note</label>
-          <textarea id="not" rows="2" placeholder="Annotazioni…"></textarea>
-        </div>
-      </div>
-
-      <div class="grid" style="margin-top:8px">
-        <div class="col-3 kpi">
-          <div class="label">Area lorda (m²)</div>
-          <div id="areaLorda" class="value">—</div>
-        </div>
-        <div class="col-3 kpi">
-          <div class="label">Copertura in pianta (m²)</div>
-          <div id="areaCoperta" class="value">—</div>
-        </div>
-        <div class="col-3 kpi">
-          <div class="label">Copertura in falda (m²)</div>
-          <div id="areaFalda" class="value">—</div>
-        </div>
-        <div class="col-3 kpi">
-          <div class="label">Area normativa richiesta (m²)</div>
-          <div id="areaNormativa" class="value">—</div>
-        </div>
-      </div>
-
-      <div class="grid" style="margin-top:8px">
-        <div class="col-3 kpi">
-          <div class="label">Costo base (€/)</div>
-          <div id="costoMq" class="value">—</div>
-        </div>
-        <div class="col-3 kpi">
-          <div class="label">Costo acciaio (€/kg variabile)</div>
-          <div id="costoKg" class="value">—</div>
-        </div>
-        <div class="col-3 kpi">
-          <div class="label">Neve & vento</div>
-          <div id="extraMeteo" class="value">—</div>
-        </div>
-        <div class="col-3 kpi">
-          <div class="label">Totale struttura (€/)</div>
-          <div id="costoStruttura" class="value">—</div>
-        </div>
-      </div>
+      <label class="field">
+        <div class="lbl">Note</div>
+        <input id="not" type="text" value="Struttura metallica zincata, copertura sandwich 40 mm" />
+      </label>
     </section>
 
     <!-- POPOLAZIONI & STABULAZIONI -->
     <section class="section">
-      <h2>Popolazioni & stabulazioni</h2>
+      <div class="section-title">Popolazioni & stabulazioni</div>
 
-      <!-- Riga 1 -->
-      <div class="grid">
+      <div class="cards">
         <!-- Bovine adulte -->
-        <div class="col-6">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <strong>Bovine adulte</strong>
+        <div class="card">
+          <div class="card-title">
+            <span>Bovine adulte</span>
             <span id="cap-bovineAdulte" class="badge">0 capi</span>
           </div>
-          <div class="grid">
-            <div class="col-4 field">
-              <label>N. capi</label>
+          <div class="row">
+            <label class="field col-4">
+              <div class="lbl">N. capi</div>
               <input id="n-bovineAdulte" type="number" step="1" />
-            </div>
-            <div class="col-4 field">
-              <label>Stabulazione</label>
+            </label>
+            <label class="field col-4">
+              <div class="lbl">Stabulazione</div>
               <select id="s-bovineAdulte"></select>
-            </div>
-            <div class="col-4 field">
-              <label>Livello</label>
+            </label>
+            <label class="field col-4">
+              <div class="lbl">Livello</div>
               <select id="l-bovineAdulte">
                 <option>Adeguato</option>
                 <option>Ottimale</option>
               </select>
-            </div>
-            <div class="col-12 tiny-note">Valore unitario: <span id="vu-bovineAdulte">—</span></div>
+            </label>
           </div>
+          <div class="hint">Valore unitario: <span id="vu-bovineAdulte">—</span> m²/capo</div>
         </div>
 
         <!-- Manze bovine -->
-        <div class="col-6">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <strong>Manze bovine</strong>
+        <div class="card">
+          <div class="card-title">
+            <span>Manze bovine</span>
             <span id="cap-manzeBovine" class="badge">0 capi</span>
           </div>
-          <div class="grid">
-            <div class="col-4 field">
-              <label>N. capi</label>
+          <div class="row">
+            <label class="field col-4">
+              <div class="lbl">N. capi</div>
               <input id="n-manzeBovine" type="number" step="1" />
-            </div>
-            <div class="col-4 field">
-              <label>Stabulazione</label>
+            </label>
+            <label class="field col-4">
+              <div class="lbl">Stabulazione</div>
               <select id="s-manzeBovine"></select>
-            </div>
-            <div class="col-4 field">
-              <label>Livello</label>
+            </label>
+            <label class="field col-4">
+              <div class="lbl">Livello</div>
               <select id="l-manzeBovine">
                 <option>Adeguato</option>
                 <option>Ottimale</option>
               </select>
-            </div>
-            <div class="col-12 tiny-note">Valore unitario: <span id="vu-manzeBovine">—</span></div>
+            </label>
           </div>
+          <div class="hint">Valore unitario: <span id="vu-manzeBovine">—</span> m²/capo</div>
         </div>
-      </div>
 
-      <!-- Riga 2 -->
-      <div class="grid">
         <!-- Tori di rimonta -->
-        <div class="col-6">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <strong>Tori da rimonta</strong>
+        <div class="card">
+          <div class="card-title">
+            <span>Tori da rimonta</span>
             <span id="cap-toriRimonta" class="badge">0 capi</span>
           </div>
-          <div class="grid">
-            <div class="col-4 field">
-              <label>N. capi</label>
+          <div class="row">
+            <label class="field col-4">
+              <div class="lbl">N. capi</div>
               <input id="n-toriRimonta" type="number" step="1" />
-            </div>
-            <div class="col-4 field">
-              <label>Stabulazione</label>
+            </label>
+            <label class="field col-4">
+              <div class="lbl">Stabulazione</div>
               <select id="s-toriRimonta"></select>
-            </div>
-            <div class="col-4 field">
-              <label>Livello</label>
+            </label>
+            <label class="field col-4">
+              <div class="lbl">Livello</div>
               <select id="l-toriRimonta">
                 <option>Adeguato</option>
                 <option>Ottimale</option>
               </select>
-            </div>
-            <div class="col-12 tiny-note">Valore unitario: <span id="vu-toriRimonta">—</span></div>
+            </label>
           </div>
+          <div class="hint">Valore unitario: <span id="vu-toriRimonta">—</span> m²/capo</div>
         </div>
 
-        <!-- Bufale adulte -->
-        <div class="col-6">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <strong>Bufale adulte</strong>
-            <span id="cap-bufaleAdulte" class="badge">0 capi</span>
-          </div>
-          <div class="grid">
-            <div class="col-4 field">
-              <label>N. capi</label>
-              <input id="n-bufaleAdulte" type="number" step="1" />
-            </div>
-            <div class="col-4 field">
-              <label>Stabulazione</label>
-              <select id="s-bufaleAdulte"></select>
-            </div>
-            <div class="col-4 field">
-              <label>Livello</label>
-              <select id="l-bufaleAdulte">
-                <option>Adeguato</option>
-                <option>Ottimale</option>
-              </select>
-            </div>
-            <div class="col-12 tiny-note">Valore unitario: <span id="vu-bufaleAdulte">—</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Riga 3 -->
-      <div class="grid">
         <!-- Bufale al parto -->
-        <div class="col-6">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <strong>Bufale al parto</strong>
+        <div class="card">
+          <div class="card-title">
+            <span>Bufale al parto</span>
             <span id="cap-bufaleParto" class="badge">0 capi</span>
           </div>
-          <div class="grid">
-            <div class="col-4 field">
-              <label>N. capi</label>
+          <div class="row">
+            <label class="field col-4">
+              <div class="lbl">N. capi</div>
               <input id="n-bufaleParto" type="number" step="1" />
-            </div>
-            <div class="col-4 field">
-              <label>Stabulazione</label>
+            </label>
+            <label class="field col-4">
+              <div class="lbl">Stabulazione</div>
               <select id="s-bufaleParto"></select>
-            </div>
-            <div class="col-4 field">
-              <label>Livello</label>
+            </label>
+            <label class="field col-4">
+              <div class="lbl">Livello</div>
               <select id="l-bufaleParto">
                 <option>Adeguato</option>
                 <option>Ottimale</option>
               </select>
-            </div>
-            <div class="col-12 tiny-note">Valore unitario: <span id="vu-bufaleParto">—</span></div>
+            </label>
           </div>
+          <div class="hint">Valore unitario: <span id="vu-bufaleParto">—</span> m²/capo</div>
+        </div>
+
+        <!-- Bufale adulte -->
+        <div class="card">
+          <div class="card-title">
+            <span>Bufale adulte</span>
+            <span id="cap-bufaleAdulte" class="badge">0 capi</span>
+          </div>
+          <div class="row">
+            <label class="field col-4">
+              <div class="lbl">N. capi</div>
+              <input id="n-bufaleAdulte" type="number" step="1" />
+            </label>
+            <label class="field col-4">
+              <div class="lbl">Stabulazione</div>
+              <select id="s-bufaleAdulte"></select>
+            </label>
+            <label class="field col-4">
+              <div class="lbl">Livello</div>
+              <select id="l-bufaleAdulte">
+                <option>Adeguato</option>
+                <option>Ottimale</option>
+              </select>
+            </label>
+          </div>
+          <div class="hint">Valore unitario: <span id="vu-bufaleAdulte">—</span> m²/capo</div>
         </div>
 
         <!-- Manze bufaline -->
-        <div class="col-6">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <strong>Manze bufaline</strong>
+        <div class="card">
+          <div class="card-title">
+            <span>Manze bufaline</span>
             <span id="cap-manzeBufaline" class="badge">0 capi</span>
           </div>
-          <div class="grid">
-            <div class="col-4 field">
-              <label>N. capi</label>
+          <div class="row">
+            <label class="field col-4">
+              <div class="lbl">N. capi</div>
               <input id="n-manzeBufaline" type="number" step="1" />
-            </div>
-            <div class="col-4 field">
-              <label>Stabulazione</label>
+            </label>
+            <label class="field col-4">
+              <div class="lbl">Stabulazione</div>
               <select id="s-manzeBufaline"></select>
-            </div>
-            <div class="col-4 field">
-              <label>Livello</label>
+            </label>
+            <label class="field col-4">
+              <div class="lbl">Livello</div>
               <select id="l-manzeBufaline">
                 <option>Adeguato</option>
                 <option>Ottimale</option>
               </select>
-            </div>
-            <div class="col-12 tiny-note">Valore unitario: <span id="vu-manzebufaline">—</span></div>
+            </label>
           </div>
+          <div class="hint">Valore unitario: <span id="vu-manzebufaline">—</span> m²/capo</div>
         </div>
       </div>
 
       <!-- Ingrasso -->
-      <div class="grid">
-        <div class="col-12">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <strong>Bovini da ingrasso</strong>
-            <span id="cap-ingrasso" class="badge">0 capi</span>
-          </div>
-          <div class="grid">
-            <div class="col-3 field">
-              <label>N. gruppi</label>
-              <input id="ing-gr" type="number" step="1" />
-            </div>
-            <div class="col-3 field">
-              <label>Capi per gruppo</label>
-              <input id="ing-cpg" type="number" step="1" />
-            </div>
-            <div class="col-3 field">
-              <label>Peso medio (kg)</label>
-              <input id="ing-peso" type="number" step="1" value="550" />
-            </div>
-            <div class="col-3 field">
-              <label>Livello</label>
-              <select id="ing-liv">
-                <option>Adeguato</option>
-                <option>Ottimale</option>
-              </select>
-            </div>
-            <div class="col-3 field">
-              <label>Stabulazione</label>
-              <select id="ing-stab"></select>
-            </div>
-            <div class="col-12 tiny-note">Valori unitari stimati: <span id="vu-ingrasso">—</span></div>
-          </div>
+      <div class="card">
+        <div class="card-title">
+          <span>Bovini da ingrasso</span>
+          <span id="cap-ingrasso" class="badge">0 capi</span>
         </div>
+        <div class="row">
+          <label class="field col-3">
+            <div class="lbl">N. gruppi</div>
+            <input id="ing-gr" type="number" step="1" />
+          </label>
+          <label class="field col-3">
+            <div class="lbl">Capi per gruppo</div>
+            <input id="ing-cpg" type="number" step="1" />
+          </label>
+          <label class="field col-3">
+            <div class="lbl">Peso medio (kg)</div>
+            <input id="ing-peso" type="number" step="1" value="550" />
+          </label>
+          <label class="field col-3">
+            <div class="lbl">Livello</div>
+            <select id="ing-liv">
+              <option>Adeguato</option>
+              <option>Ottimale</option>
+            </select>
+          </label>
+        </div>
+        <div class="hint">Valori unitari stimati: min 3.25 — adeg 4.25 — opt 5.25 m²/capo</div>
       </div>
 
-      <div class="right" style="margin-top:16px">
-        <button id="btn-next" class="btn primary" disabled>Prosegui alla pagina 2</button>
+      <div class="right">
+        <button id="btn-next" class="btn primary">Prosegui alla pagina 2</button>
       </div>
     </section>
 
-    <footer>
+    <footer class="footer">
       © <span id="titleFooter">BudgetBox</span> per Grimaldelli s.r.l. — Manuel Zago
     </footer>
   </div>
 
   <script src="assets/js/core.js" defer></script>
   <script>
-    // Avvio sicuro: nessun alert se lo script non fosse disponibile
     document.addEventListener('DOMContentLoaded', function () {
       if (window.PreventivoApp && PreventivoApp.initPagina1) {
         PreventivoApp.initPagina1();
