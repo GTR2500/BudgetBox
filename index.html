@@ -57,7 +57,7 @@
         <label class="bb-field">
           <span>Località</span>
           <select id="fld-localita">
-            <option value="">Caricamento località…</option>
+            <option value="">Seleziona una località…</option>
           </select>
         </label>
 
@@ -185,13 +185,207 @@
       </div>
     </section>
 
-    <!-- POPOLAZIONI & STABULAZIONI (invariata) -->
+    <!-- POPOLAZIONI & STABULAZIONI (RIPRISTINATA) -->
     <section class="bb-card">
       <div class="bb-card__title">
         <h2>Popolazioni & stabulazioni</h2>
       </div>
-      <!-- …lasciata com’era, per brevità non ripetuta qui… -->
-      <div class="bb-hint">Questa sezione rimane invariata in questo step.</div>
+
+      <div class="bb-grid bb-grid-2 bb-grid-gap">
+        <!-- Bovine adulte -->
+        <div class="bb-box">
+          <div class="bb-box__title">Bovine adulte</div>
+          <div class="bb-grid bb-grid-3">
+            <label class="bb-field">
+              <span>N. capi</span>
+              <input data-key="bovAdulte.n" type="number" min="0" step="1" placeholder="0">
+            </label>
+            <label class="bb-field">
+              <span>Stabulazione</span>
+              <select data-key="bovAdulte.stab">
+                <option value="libera">libera</option>
+                <option value="lettiera">lettiera</option>
+              </select>
+            </label>
+            <label class="bb-field">
+              <span>Livello</span>
+              <select data-key="bovAdulte.liv">
+                <option value="min">Minimo</option>
+                <option value="adeguato">Adeguato</option>
+                <option value="opt">Ottimale</option>
+              </select>
+            </label>
+          </div>
+          <div class="bb-hint">Valore unitario: <span data-key="bovAdulte.vu">—</span> m²/capo</div>
+        </div>
+
+        <!-- Tori da rimonta -->
+        <div class="bb-box">
+          <div class="bb-box__title">Tori da rimonta</div>
+          <div class="bb-grid bb-grid-3">
+            <label class="bb-field">
+              <span>N. capi</span>
+              <input data-key="tori.n" type="number" min="0" step="1" placeholder="0">
+            </label>
+            <label class="bb-field">
+              <span>Stabulazione</span>
+              <select data-key="tori.stab">
+                <option value="libera">libera</option>
+                <option value="lettiera">lettiera</option>
+              </select>
+            </label>
+            <label class="bb-field">
+              <span>Livello</span>
+              <select data-key="tori.liv">
+                <option value="min">Minimo</option>
+                <option value="adeguato">Adeguato</option>
+                <option value="opt">Ottimale</option>
+              </select>
+            </label>
+          </div>
+          <div class="bb-hint">Valore unitario: <span data-key="tori.vu">—</span> m²/capo</div>
+        </div>
+
+        <!-- Bufale al parto -->
+        <div class="bb-box">
+          <div class="bb-box__title">Bufale al parto</div>
+          <div class="bb-grid bb-grid-3">
+            <label class="bb-field">
+              <span>N. capi</span>
+              <input data-key="bufParto.n" type="number" min="0" step="1" placeholder="0">
+            </label>
+            <label class="bb-field">
+              <span>Stabulazione</span>
+              <select data-key="bufParto.stab">
+                <option value="libera">libera</option>
+                <option value="lettiera">lettiera</option>
+              </select>
+            </label>
+            <label class="bb-field">
+              <span>Livello</span>
+              <select data-key="bufParto.liv">
+                <option value="min">Minimo</option>
+                <option value="adeguato">Adeguato</option>
+                <option value="opt">Ottimale</option>
+              </select>
+            </label>
+          </div>
+          <div class="bb-hint">Valore unitario: <span data-key="bufParto.vu">—</span> m²/capo</div>
+        </div>
+
+        <!-- Manze bovine -->
+        <div class="bb-box">
+          <div class="bb-box__title">Manze bovine</div>
+          <div class="bb-grid bb-grid-3">
+            <label class="bb-field">
+              <span>N. capi</span>
+              <input data-key="manzeBov.n" type="number" min="0" step="1" placeholder="0">
+            </label>
+            <label class="bb-field">
+              <span>Stabulazione</span>
+              <select data-key="manzeBov.stab">
+                <option value="libera">libera</option>
+                <option value="lettiera">lettiera</option>
+              </select>
+            </label>
+            <label class="bb-field">
+              <span>Livello</span>
+              <select data-key="manzeBov.liv">
+                <option value="min">Minimo</option>
+                <option value="adeguato">Adeguato</option>
+                <option value="opt">Ottimale</option>
+              </select>
+            </label>
+          </div>
+          <div class="bb-hint">Valore unitario: <span data-key="manzeBov.vu">—</span> m²/capo</div>
+        </div>
+
+        <!-- Bufale adulte -->
+        <div class="bb-box">
+          <div class="bb-box__title">Bufale adulte</div>
+          <div class="bb-grid bb-grid-3">
+            <label class="bb-field">
+              <span>N. capi</span>
+              <input data-key="bufAdulte.n" type="number" min="0" step="1" placeholder="0">
+            </label>
+            <label class="bb-field">
+              <span>Stabulazione</span>
+              <select data-key="bufAdulte.stab">
+                <option value="libera">libera</option>
+                <option value="lettiera">lettiera</option>
+              </select>
+            </label>
+            <label class="bb-field">
+              <span>Livello</span>
+              <select data-key="bufAdulte.liv">
+                <option value="min">Minimo</option>
+                <option value="adeguato">Adeguato</option>
+                <option value="opt">Ottimale</option>
+              </select>
+            </label>
+          </div>
+          <div class="bb-hint">Valore unitario: <span data-key="bufAdulte.vu">—</span> m²/capo</div>
+        </div>
+
+        <!-- Manze bufaline -->
+        <div class="bb-box">
+          <div class="bb-box__title">Manze bufaline</div>
+          <div class="bb-grid bb-grid-3">
+            <label class="bb-field">
+              <span>N. capi</span>
+              <input data-key="manzeBuf.n" type="number" min="0" step="1" placeholder="0">
+            </label>
+            <label class="bb-field">
+              <span>Stabulazione</span>
+              <select data-key="manzeBuf.stab">
+                <option value="libera">libera</option>
+                <option value="lettiera">lettiera</option>
+              </select>
+            </label>
+            <label class="bb-field">
+              <span>Livello</span>
+              <select data-key="manzeBuf.liv">
+                <option value="min">Minimo</option>
+                <option value="adeguato">Adeguato</option>
+                <option value="opt">Ottimale</option>
+              </select>
+            </label>
+          </div>
+          <div class="bb-hint">Valore unitario: <span data-key="manzeBuf.vu">—</span> m²/capo</div>
+        </div>
+
+        <!-- Bovini da ingrasso -->
+        <div class="bb-box bb-box--wide">
+          <div class="bb-box__title">Bovini da ingrasso</div>
+          <div class="bb-grid bb-grid-4">
+            <label class="bb-field">
+              <span>N. gruppi</span>
+              <input data-key="ingrasso.grp" type="number" min="0" step="1" placeholder="0">
+            </label>
+            <label class="bb-field">
+              <span>Capi per gruppo</span>
+              <input data-key="ingrasso.ppg" type="number" min="0" step="1" placeholder="0">
+            </label>
+            <label class="bb-field">
+              <span>Peso medio (kg)</span>
+              <input data-key="ingrasso.peso" type="number" min="0" step="1" placeholder="0">
+            </label>
+            <label class="bb-field">
+              <span>Livello</span>
+              <select data-key="ingrasso.liv">
+                <option value="min">Minimo</option>
+                <option value="adeguato">Adeguato</option>
+                <option value="opt">Ottimale</option>
+              </select>
+            </label>
+          </div>
+          <div class="bb-hint">Valori unitari stimati: min 3.25 → adeg 4.25 → opt 5.25 m²/capo</div>
+        </div>
+      </div>
+
+      <div class="bb-card__footer">
+        <button id="btn-next" class="bb-btn bb-btn--primary">Prosegui alla pagina 2</button>
+      </div>
     </section>
   </main>
 
