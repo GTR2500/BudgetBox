@@ -1,0 +1,8 @@
+categoria;opzioni
+bovineAdulte;libera_lettiera,libera_cuccette,fissa_posta
+manzeBovine;libera_lettiera,libera_cuccette,fissa_posta
+toriRimonta;libera_lettiera,libera_cuccette,fissa_posta
+bufaleAdulte;libera_lettiera,libera_cuccette,fissa_posta
+bufaleParto;libera_lettiera,libera_cuccette,fissa_posta
+manzeBufaline;libera_lettiera,libera_cuccette,fissa_posta
+ingrasso;libera_lettiera,grigliato
