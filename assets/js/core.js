@@ -1,4 +1,4 @@
-// ==== BudgetBox core (logo + meteo su 2 righe, ZONA in riga 2) ====
+// ==== BudgetBox core (meteo: Zona SISMICA in riga 2, layout invariato) ====
 (function () {
   'use strict';
 
@@ -74,7 +74,7 @@
     return `${rec.COMUNE || '—'}${prov}`;
   }
 
-  // ---- Meteo pill formatter (2 righe; ZONA su riga 2) ----
+  // ---- Meteo pill formatter (2 righe con Zona SISMICA in riga 2) ----
   function meteoLines(rec) {
     if (!rec) return { l1: '—', l2: '—' };
     const neve = fmt2(rec.CARICO_NEVE);
@@ -82,7 +82,7 @@
     const alt = round0(rec.ALTITUDINE);
     const zona = (rec.ZONA_SISMICA || '').toString().trim();
 
-    // Riga 1: senza ZONA
+    // Riga 1: solo grandezze fisiche
     const l1 = joinDot([
       `Neve ${neve} kg/m²`,
       `Vento ${vento} m/s`,
@@ -95,19 +95,19 @@
       rec.COMUNE,
       zona ? `Zona SISMICA ${zona}` : '',
       rec.ISTAT ? `ISTAT ${rec.ISTAT}` : ''
-    ]) || '—';
+    ]);
 
-    return { l1, l2 };
+    return { l1, l2: l2 || '—' };
   }
 
   function renderMeteo(rec) {
     const { l1, l2 } = meteoLines(rec);
-    document.getElementById('meteo-pill-line1').textContent = l1;
-    document.getElementById('meteo-pill-line2').textContent = l2;
+    $('#meteo-pill-line1').textContent = l1;
+    $('#meteo-pill-line2').textContent = l2;
   }
 
   function populateLocalita(ds) {
-    const sel = document.getElementById('fld-localita');
+    const sel = $('#fld-localita');
     sel.innerHTML = '';
     const opt0 = document.createElement('option');
     opt0.value = '';
@@ -142,40 +142,44 @@
 
   // ---- Calcoli rapidi sezione Struttura (layout originale) ----
   function recalcKpi() {
-    const L = parseFloat(document.getElementById('fld-lung').value);
-    const W = parseFloat(document.getElementById('fld-larg').value);
-    const q = parseFloat(document.getElementById('fld-quota').value);
-    const p = parseFloat(document.getElementById('fld-prezzo').value);
+    const L = parseFloat($('#fld-lung').value);
+    const W = parseFloat($('#fld-larg').value);
+    const q = parseFloat($('#fld-quota').value);
+    const p = parseFloat($('#fld-prezzo').value);
 
     const areaLorda = (Number.isFinite(L) && Number.isFinite(W)) ? (L * W) : 0;
     const areaDec = (Number.isFinite(areaLorda) && Number.isFinite(q)) ? (areaLorda * (q / 100)) : 0;
     const costo = (Number.isFinite(areaLorda) && Number.isFinite(p)) ? (areaLorda * p) : 0;
 
-    document.getElementById('kpi-area-lorda').textContent = `${fmt2(areaLorda)} m²`;
-    document.getElementById('kpi-area-decubito').textContent = `${fmt2(areaDec)} m²`;
-    document.getElementById('kpi-area-normativa').textContent = `0.0 m²`;
-    document.getElementById('kpi-costo').textContent = fmtMoney(costo);
+    $('#kpi-area-lorda').textContent = `${fmt2(areaLorda)} m²`;
+    $('#kpi-area-decubito').textContent = `${fmt2(areaDec)} m²`;
+    $('#kpi-area-normativa').textContent = `0.0 m²`; // resta 0 finché non colleghiamo la normativa
+    $('#kpi-costo').textContent = fmtMoney(costo);
 
-    document.getElementById('state-pct').textContent = `(0%)`;
-    const chip = document.getElementById('state-chip');
+    // Stato (placeholder, coerente con screenshot)
+    $('#state-pct').textContent = `(0%)`;
+    const chip = $('#state-chip');
     chip.textContent = 'Non conforme';
     chip.className = 'bb-chip bb-chip--red';
   }
 
   function bindRecalc() {
-    ['fld-lung','fld-larg','fld-quota','fld-prezzo'].forEach(id => {
-      document.getElementById(id).addEventListener('input', recalcKpi);
+    ['#fld-lung','#fld-larg','#fld-quota','#fld-prezzo'].forEach(sel => {
+      $(sel).addEventListener('input', recalcKpi);
     });
-    document.getElementById('btn-check').addEventListener('click', recalcKpi);
+    $('#btn-check').addEventListener('click', recalcKpi);
   }
 
   function initHeader() {
+    // Rev badge
     const d = new Date();
     const rev = `Rev ${d.toLocaleDateString('it-IT')} · v1.0.1`;
-    document.getElementById('bb-rev').textContent = rev;
+    $('#bb-rev').textContent = rev;
 
-    document.getElementById('btn-print').addEventListener('click', () => window.print());
+    // Print
+    $('#btn-print').addEventListener('click', () => window.print());
 
+    // Tema (light default)
     const applyTheme = () => {
       if (state.theme === 'dark') {
         document.documentElement.style.setProperty('--bg', '#0f1115');
@@ -183,24 +187,72 @@
         document.documentElement.style.setProperty('--panel-2', '#10141b');
         document.documentElement.style.setProperty('--text', '#e6e6e6');
         document.documentElement.style.setProperty('--border', '#262b36');
-        document.getElementById('btn-theme').textContent = '☀️';
+        $('#btn-theme').textContent = '☀️';
       } else {
         document.documentElement.style.setProperty('--bg', '#f3f5f9');
         document.documentElement.style.setProperty('--panel', '#ffffff');
         document.documentElement.style.setProperty('--panel-2', '#f7f9fc');
         document.documentElement.style.setProperty('--text', '#1a1e27');
         document.documentElement.style.setProperty('--border', '#e5e9f2');
-        document.getElementById('btn-theme').textContent = '🌙';
+        $('#btn-theme').textContent = '🌙';
       }
     };
     applyTheme();
-    document.getElementById('btn-theme').addEventListener('click', () => {
+    $('#btn-theme').addEventListener('click', () => {
       state.theme = state.theme === 'light' ? 'dark' : 'light';
       localStorage.setItem('bb-theme', state.theme);
       applyTheme();
     });
 
-    // Fallback multipli per il logo
-    const logo = document.getElementById('company-logo');
+    // Fallback multipli per il logo (se l'URL esterno non carica)
+    const logo = $('#company-logo');
     if (logo) {
-      const fallbacks = (logo.getAttribute('data-fallback')
+      const fallbacks = (logo.getAttribute('data-fallback') || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      let idx = 0;
+      const onErr = () => {
+        if (idx < fallbacks.length) {
+          logo.src = fallbacks[idx++];
+        } else {
+          logo.removeEventListener('error', onErr);
+        }
+      };
+      logo.addEventListener('error', onErr);
+    }
+  }
+
+  async function boot() {
+    initHeader();
+
+    // Data default
+    $('#fld-data').value = todayISO();
+
+    // Carica Località dal TXT (percorso con fallback, nessun backend)
+    const paths = [
+      'public/documenti/C-S-A-maggio-2025.txt',
+      './public/documenti/C-S-A-maggio-2025.txt',
+      '/public/documenti/C-S-A-maggio-2025.txt',
+      'documenti/C-S-A-maggio-2025.txt'
+    ];
+    try {
+      const txt = await fetchWithFallback(paths);
+      const ds = parseTableTxt(txt);
+      state.datasetLocalita = ds;
+      populateLocalita(ds);
+    } catch (e) {
+      console.warn(e);
+      // fallback UI
+      const sel = $('#fld-localita');
+      sel.innerHTML = '<option value="">Dati località non disponibili</option>';
+      sel.disabled = true;
+      renderMeteo(null);
+    }
+
+    bindRecalc();
+    recalcKpi();
+  }
+
+  document.addEventListener('DOMContentLoaded', boot);
+})();
