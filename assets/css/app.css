@@ -101,7 +101,7 @@ body{
 .bb-hint{font-size:12px;color:var(--muted);margin-top:6px}
 .bb-hint-inline{font-weight:400;color:var(--muted);margin-left:6px}
 
-/* Stato superficie (lasciato com'era) */
+/* Stato superficie (sezione precedente) */
 .bb-state{
   display:grid;grid-template-rows:auto auto auto;gap:6px;
   align-content:start;padding:8px 10px;border:1px dashed var(--border);
@@ -113,7 +113,6 @@ body{
 .bb-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid transparent;font-size:13px}
 .bb-chip--green{background:#e7f8ea;color:#0e6b25;border-color:#c9efcf}
 .bb-chip--yellow{background:#fff7e5;color:#6a4a00;border-color:#ffe7b4}
-(bb-chip--red); /* guard */
 .bb-chip--red{background:#ffe9ea;color:#7d1017;border-color:#ffc9cd}
 
 /* KPI strip */
@@ -124,6 +123,13 @@ body{
 .bb-kpi{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:12px}
 .bb-kpi__label{font-size:12px;color:var(--muted)}
 .bb-kpi__value{font-weight:700;margin-top:4px}
+
+/* Popolazioni */
+.bb-box{
+  border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--panel-2)
+}
+.bb-box__title{font-weight:700;margin-bottom:10px}
+.bb-box--wide{grid-column:1/-1}
 
 /* Footer */
 .bb-footer{padding:24px 0 42px;color:var(--muted);text-align:center;border-top:1px solid var(--border)}
