@@ -1,0 +1,7 @@
+categoria;adeguato_min;adeguato_max;ottimale_min
+bovineAdulte;6.0;7.0;7.0
+manzeBovine;3.5;4.0;4.0
+toriRimonta;9.0;10.0;10.0
+bufaleAdulte;5.0;7.0;7.0
+bufaleParto;7.0;8.0;8.0
+manzeBufaline;2.5;4.0;4.0
