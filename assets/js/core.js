@@ -1,4 +1,4 @@
-// ==== BudgetBox core (ripristino pagina iniziale) ====
+// ==== BudgetBox core (header logo + meteo pill 2 righe, layout invariato) ====
 (function () {
   'use strict';
 
@@ -16,7 +16,6 @@
   const fmtMoney = (n) =>
     Number.isFinite(+n) ? (+n).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' }) : '—';
   const round0 = (n) => Number.isFinite(+n) ? Math.round(+n) : '—';
-
   const joinDot = (arr) => arr.filter(Boolean).join(' · ');
 
   function todayISO() {
@@ -76,22 +75,36 @@
     return `${rec.COMUNE || '—'}${prov}`;
   }
 
-  // ---- Meteo pill (stile iniziale) ----
-  function formatMeteoPill(rec) {
-    if (!rec) return '—';
+  // ---- Meteo pill formatter (2 righe) ----
+  function meteoLines(rec) {
+    if (!rec) return { l1: '—', l2: '—' };
     const neve = fmt2(rec.CARICO_NEVE);
     const vento = fmt2(rec.VENTO);
     const alt = round0(rec.ALTITUDINE);
-    // formato "Neve 150.00 kg/m² · Vento 50.00 m/s · Alt: 101 m"
-    return joinDot([
+    const zona = (rec.ZONA_SISMICA || '').toString().trim();
+
+    // Riga 1: Neve … · Vento … · Alt … m [Zona SISMICA … se presente]
+    const altZona = zona ? `Alt ${alt} m Zona SISMICA ${zona}` : `Alt ${alt} m`;
+    const l1 = joinDot([
       `Neve ${neve} kg/m²`,
       `Vento ${vento} m/s`,
-      `Alt: ${alt} m`
+      altZona
     ]);
+
+    // Riga 2: Regione · Comune · ISTAT n (se ISTAT presente)
+    const l2 = joinDot([
+      rec.REGIONE,
+      rec.COMUNE,
+      rec.ISTAT ? `ISTAT ${rec.ISTAT}` : ''
+    ]);
+
+    return { l1, l2: l2 || '—' };
   }
 
   function renderMeteo(rec) {
-    $('#meteo-pill').textContent = formatMeteoPill(rec);
+    const { l1, l2 } = meteoLines(rec);
+    $('#meteo-pill-line1').textContent = l1;
+    $('#meteo-pill-line2').textContent = l2;
   }
 
   function populateLocalita(ds) {
@@ -115,6 +128,8 @@
       sel.value = '0';
       state.selRec = normLoc(ds[0]);
       renderMeteo(state.selRec);
+    } else {
+      renderMeteo(null);
     }
 
     sel.addEventListener('change', () => {
@@ -126,7 +141,7 @@
     });
   }
 
-  // ---- Calcoli rapidi sezione Struttura (come nello screenshot) ----
+  // ---- Calcoli rapidi sezione Struttura (layout originale) ----
   function recalcKpi() {
     const L = parseFloat($('#fld-lung').value);
     const W = parseFloat($('#fld-larg').value);
@@ -139,13 +154,11 @@
 
     $('#kpi-area-lorda').textContent = `${fmt2(areaLorda)} m²`;
     $('#kpi-area-decubito').textContent = `${fmt2(areaDec)} m²`;
-    // area normativa: per ora 0.0 finché non colleghiamo popolazioni (come nello stato base dello screenshot)
-    $('#kpi-area-normativa').textContent = `0.0 m²`;
+    $('#kpi-area-normativa').textContent = `0.0 m²`; // resta 0 finché non colleghiamo la normativa
     $('#kpi-costo').textContent = fmtMoney(costo);
 
-    // Stato superficie (placeholder — 0% finché la normativa è 0)
-    const pct = 0;
-    $('#state-pct').textContent = `(${pct}%)`;
+    // Stato (placeholder, coerente con screenshot)
+    $('#state-pct').textContent = `(0%)`;
     const chip = $('#state-chip');
     chip.textContent = 'Non conforme';
     chip.className = 'bb-chip bb-chip--red';
@@ -167,7 +180,7 @@
     // Print
     $('#btn-print').addEventListener('click', () => window.print());
 
-    // Tema (light default, come nello screenshot)
+    // Tema (light default)
     const applyTheme = () => {
       if (state.theme === 'dark') {
         document.documentElement.style.setProperty('--bg', '#0f1115');
@@ -177,7 +190,6 @@
         document.documentElement.style.setProperty('--border', '#262b36');
         $('#btn-theme').textContent = '☀️';
       } else {
-        // light
         document.documentElement.style.setProperty('--bg', '#f3f5f9');
         document.documentElement.style.setProperty('--panel', '#ffffff');
         document.documentElement.style.setProperty('--panel-2', '#f7f9fc');
@@ -192,6 +204,24 @@
       localStorage.setItem('bb-theme', state.theme);
       applyTheme();
     });
+
+    // Fallback multipli per il logo (se l'URL esterno non carica)
+    const logo = $('#company-logo');
+    if (logo) {
+      const fallbacks = (logo.getAttribute('data-fallback') || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      let idx = 0;
+      const onErr = () => {
+        if (idx < fallbacks.length) {
+          logo.src = fallbacks[idx++];
+        } else {
+          logo.removeEventListener('error', onErr);
+        }
+      };
+      logo.addEventListener('error', onErr);
+    }
   }
 
   async function boot() {
@@ -205,7 +235,7 @@
       'public/documenti/C-S-A-maggio-2025.txt',
       './public/documenti/C-S-A-maggio-2025.txt',
       '/public/documenti/C-S-A-maggio-2025.txt',
-      'documenti/C-S-A-maggio-2025.txt' // ulteriore fallback nel caso sia root/documenti
+      'documenti/C-S-A-maggio-2025.txt'
     ];
     try {
       const txt = await fetchWithFallback(paths);
